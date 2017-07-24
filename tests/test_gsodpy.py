@@ -127,6 +127,27 @@ class TestGSOD():
                                                 '064500-99999'])
 
 
+
+class TestGSODDownloads():
+    """
+    py.test class for tests around GSOD's function for
+    downloading/cleaning files
+    """
+
+    def test_download_GSOD_file(self):
+        """
+        py.test for GSOD._download_GSOD_file
+        """
+        gsod = GSOD()
+        (return_code,
+         local_path) = gsod._download_GSOD_file(year=2017,
+                                                usaf_wban='064500-99999')
+        assert return_code == 0
+        assert local_path == 'weather_files/2017/064500-99999.op.gz'
+        assert os.path.isfile(local_path)
+
+
+
 class TestISD():
     """
     py.test class for ISD

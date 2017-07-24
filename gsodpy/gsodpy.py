@@ -26,6 +26,8 @@ import time
 import datetime
 import re
 
+import progressbar
+
 # For the Haversine Formula
 from math import cos, asin, sqrt
 
@@ -433,27 +435,21 @@ class GSOD():
         print("\n\nDownloaded data for {} years".format(end_year - start_year))
         return True
 
-    def download_single_GSOD_file(year, usaf_wban):
-        """
-        Downloads data from GSOD for a single year
 
-        Will check all weather stations entered in weatherfiles.txt (same folder)
-        Loads the isd-history.csv in a pandas dataframe to check the station name
-        and make sure there is actually data for the year we want (otherwise would
-        try to download a file that doesn't exist)
+    def get_all_data(self):
+        """
+        Downloads data from GSOD for all `years` and `stations`
+        calls GSOD.download_GSOD_file()
 
         Args:
         ------
-            year (int): Year to download data for (format YYYY)
-
-            usaf_wban (str): the USAF-WBAN (eg '064500-99999') to download data
-            for
-
-            weather_dir is stored as a GSOD attribute
+            None, `years`, `stations`, and `weather_dir`
+                are stored as a GSOD attribute
 
         Returns:
         --------
-            None, will just download everything
+
+            stats (3-uple): (n_success, n_doesnt_exists, n_outdated)
 
         Needs:
         -------------------------------
@@ -463,24 +459,153 @@ class GSOD():
 
         """
 
-        # Log to NOAA ftp
-        ftp = FTP('ftp.ncdc.noaa.gov')
-        ftp.login()
+        # c = done; r = doesn't exist; o = outdated, stopped before
+        c = 0
+        r = 0
+        o = 0
 
-        # Weather stations are stored into the following file
-        # with the syntax "USAF-WBAN"
-        weatherfiles = os.path.join(self.weather_dir, 'weatherfiles.txt')
+        max_value = len(self.years) * len(self.stations)
 
-        if not os.path.isfile(weatherfiles):
-            print("You need to have a file in the current folder that's called "
-                  "'weatherfiles.txt' and in which you should put the USAF-WBAN "
-                  "of stations you want")
+        if max_value == 0:
+            msg = ("Make sure you use GSOD.set_years or GSOD.set_years_range "
+                   "AND GSOD.set_stations or GSOD.get_stations_from_file")
 
-        # Load weather stations into lists. Stations[i] returns the stations
-        # Can get it's length by calling 'len(stations)'
-        # Will ignore everything that's after the pound `#` sign
-        stations = [line.split('#')[0].strip() for line in open(weatherfiles)
-                    if not line.startswith('#')]
+            raise ValueError(msg)
+
+        with progressbar.ProgressBar(max_value=max_value) as bar:
+            i = 0
+            for year in self.years:
+                for usaf_wban in self.stations:
+                    i += 1
+
+                    # Try downloading
+                    return_code, op_gz_path = self.get_GSOD_file(year=year,
+                                                          usaf_wban=usaf_wban)
+                    # return_codes = {0: 'success',
+                    #                 1: 'missing',
+                    #                 2: 'outdated'}
+                    if return_code == 0:
+                        c += 1
+                    elif return_code == 1:
+                        r += 1
+                    elif return_code == 2:
+                        o += 1
+
+                    bar.update(i)
+
+        print("Success: {} files have been stored. ".format(c))
+        print("{} station IDs didn't exist. ".format(r))
+        print("{} stations stopped recording data before a year "
+              "that was requested".format(o))
+
+        return (c, r, o)
+
+
+    def get_GSOD_file(self, year, usaf_wban, weather_dir=None, ftp=None):
+        """
+        Downloads and extracts data from GSOD from a single year for a single
+        station.
+
+        calls `GSOD.download_GSOD_file` followed by `GSOD.cleanup_extract
+
+        Args:
+        ------
+            year (int): Year to download data for (format YYYY)
+
+            usaf_wban (str): the USAF-WBAN (eg '064500-99999') to download data
+            for
+
+            ftp (ftplib.FTP): an instance of ftplib.FTP logged into
+                ftp.ncdc.noaa.gov
+                Will create one if None is passed
+
+            weather_dir (str): path to the folder to store weather files, will
+                default to self.weather_dir
+
+        Returns:
+        --------
+
+            op_path (str): path to the uncompressed op_path,
+                False if didn't work
+
+
+
+        """
+
+        op_path = False
+
+        if weather_dir is None:
+            weather_dir = self.weather_dir
+
+        return_code, op_gz_path = self._download_GSOD_file(year=year,
+                                                           usaf_wban=usaf_wban,
+                                                           ftp=ftp)
+        if return_code == 0:
+            op_path = self._cleanup_extract_file(op_gz_path=op_gz_path,
+                                                 delete_op_gz=True)
+
+        return op_path
+
+
+
+    def _download_GSOD_file(self, year, usaf_wban, weather_dir=None, ftp=None):
+        """
+        Downloads data from GSOD for a single year for a single station
+
+        Loads the isd-history.csv in a pandas dataframe to check the station
+        name and make sure there is actually data for the year we want
+        (otherwise would try to download a file that doesn't exist)
+
+        Args:
+        ------
+            year (int): Year to download data for (format YYYY)
+
+            usaf_wban (str): the USAF-WBAN (eg '064500-99999') to download data
+            for
+
+            ftp (ftplib.FTP): an instance of ftplib.FTP logged into
+                ftp.ncdc.noaa.gov
+                Will create one if None is passed
+
+            weather_dir (str): path to the folder to store weather files, will
+                default to self.weather_dir
+
+        Returns:
+        --------
+            return_code (int): {0: 'success', 1: 'missing', 2: 'outdated'}
+
+            local_path (str): the path to the downloaded *.op.gz file
+
+        Needs:
+        -------------------------------
+            from ftplib import FTP
+            import os
+            import pandas as pd
+
+        """
+
+        if weather_dir is None:
+            weather_dir = self.weather_dir
+
+        # Test if folder doesn't exist
+        if os.path.isdir(weather_dir) is False:
+            # If not, create folder
+            os.makedirs(weather_dir)
+
+
+
+        # Whether you need to close the ftp connection or not
+        to_close = False
+        if ftp is None:
+            to_close = True
+            # Log to NOAA ftp
+            ftp = FTP('ftp.ncdc.noaa.gov')
+            ftp.login()
+        else:
+            if ftp.host != 'ftp.ncdc.noaa.gov':
+                raise ValueError("ftp should be logged into "
+                                 "'ftp.ncdc.noaa.gov' not into "
+                                 "'{}'".format(ftp.host))
 
         # Load dataframe of isd-history
         df = self.isd.df
@@ -488,67 +613,112 @@ class GSOD():
         # Open an error log file.
         ferror = open(os.path.join(SUPPORT_DIR, 'errors.txt'), 'w')
 
-        # c = done; r = doesn't exist; o = outdated, stopped before
-        c = 0
-        r = 0
-        o = 0
 
-        weatherfolder = os.path.join(self.weather_dir, str(year))
-
-        # Test if folder doesn't exist
-        if os.path.isdir(weatherfolder) is False:
-            # If not, create folder
-            os.makedirs(weatherfolder)
-
-        # Change current working directory (CWD)
+                # Change current working directory (CWD)
         # os.chdir(weatherfolder)
 
-        # Change current working directory on FTP
-        # GSOD data is stored in there, organized per year
-        ftp.cwd('/pub/data/gsod/' + str(year))
+        # Construct file names
+        op_name = '{id}-{y}.op.gz'.format(id=usaf_wban, y=year)
 
-        # Get each station file
-        for station in stations:
+        remote_folder = os.path.join('/pub/data/gsod/', str(year))
+        local_folder = os.path.join(self.weather_dir, str(year))
 
-            end_year = df.ix[station, 'END'].year
+        remote_path =  os.path.join(remote_folder, op_name)
+        local_path = os.path.join(local_folder, op_name)
 
-            if year <= end_year:
 
-                # Construct file name
-                fgsod_name = str(station) + "-" + str(year) + ".op.gz"
-                fgsod = os.path.join(weatherfolder, fgsod_name)
+        # Sanitize: should have been done already, but better safe... fast
+        # anuyways
+        usaf_wban = self.sanitize_usaf_wban(usaf_wban)
 
-                # Retrieve file: open(fgsod, 'wb') opens a local file to receive
-                # the distant blocks of binary data, in binary write mode
-                # retrbinary(command, callback): command is a 'RETR filename',
-                # and callback function is called for each block of data received:
-                # here we write it to the local file
+        # Check if there's data or not
+        end_year = df.loc[usaf_wban, 'END'].year
 
-                # Try to retrieve it
-                try:
-                    ftp.retrbinary('RETR ' + fgsod_name, open(fgsod, 'wb').write)
-                    # Print current progress
-                    c += 1
-                    d = 100 * (r+c+o) / (len(stations))
-                    print("Station downloaded:" + df['STATION NAME'][station])
-                    print("progress: {:.0f}%".format(d))
-                except:
-                    r += 1
-                    ferror.write(fgsod_name + " doesn't exist\r\n")
+        return_code = None
+        if year <= end_year:
 
+            # Retrieve file: open(fgsod, 'wb') opens a local file to receive
+            # the distant blocks of binary data, in binary write mode
+            # retrbinary(command, callback): command is a 'RETR filename',
+            # and callback function is called for each block of data received:
+            # here we write it to the local file
+
+            # Try to retrieve it
+            try:
+                ftp.retrbinary('RETR ' + remote_path, open(local_path,
+                                                           'wb').write)
+                print("Station downloaded:" + df['STATION NAME'][station])
+
+                return_code = 0
+
+            except:
+                return_code = 1
+                ferror.write(op_name + " doesn't exist\r\n")
+
+        else:
+            return_code = 2
+            msg = ("{} doesn't have data up to this year. It stopped on:"
+                   "{}".format(df['STATION NAME'][station],
+                               df['END'][station].date()))
+            warnings.warn(msg, UserWarning)
+
+        if to_close:
+            ftp.quit()
+
+        return (return_code, local_path)
+
+    def cleanup_extract_file(self, op_gz_path, delete_op_gz=True):
+        """
+        Extracts the GSOD *.op.gz files to *.op and deletes the original gzip
+        file. Also checks for empty files, and removes them
+
+        Args:
+        ------
+            op_gz_path (str): the path to the op_gz_path file downloaded from
+                GSOD
+
+            delete_op_gz (bool): wether to delete the *.op.gz compressed file
+                after decompressing
+        Returns:
+        --------
+            op_path (str): path to the uncompressed *.op file
+
+        Needs:
+        -------------------------------
+            import gzip
+            import os
+            import re
+
+        """
+
+        # If the file is empty, we delete it
+        if os.path.getsize(op_gz_path) == 0:
+            os.remove(op_gz_path)
+        else:
+            # If not, we extract
+            #  Should return xxxx.op and .gz
+            op_path, gz = os.path.splitext(op_gz_path)
+
+            if gz == ".gz":
+                print("unzipping '{}'".format(op_gz_path))
+                # Open the gzip file
+                with gzip.open(op_gz_path, 'rb') as in_file:
+                    # Open a second file to write the uncompressed stream
+                    with open(op_path, 'wb') as out_file:
+                        out_file.write(in_file.read())
+
+                # Deletes the op_gz_path
+                if delete_op_gz:
+                    os.remove(op_gz_path)
             else:
-                o += 1
-                print(df['STATION NAME'][station] + " doesn't have data up to this"
-                      "year. It stopped on: " + str(df['END'][station].date()))
+                raise ValueError("Was expecting an (.op).gz file to be passed,"
+                                 " not: '{}'".format(op_gz_path))
 
-        print("Success: " + str(c) + " files have been stored. ")
-        print(str(r) + " station IDs didn't exist. ")
-        print(str(o) + " stations stopped recording data before "
-              "the year " + str(year))
-        ftp.quit()
+        return op_path
 
 
-    def cleanup_extract(year):
+
+    def cleanup_extract_all(year):
         """
         Extracts the GSOD *.op.gz files to *.op and deletes the original gzip file
 

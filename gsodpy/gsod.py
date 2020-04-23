@@ -31,7 +31,7 @@ import progressbar
 # For the Haversine Formula
 from math import cos, asin, sqrt
 
-from gsodpy.utils import is_list_like
+from gsodpy.utils import (is_list_like, ReturnCode)
 
 import warnings
 
@@ -81,7 +81,8 @@ class ISD():
 
     def update_isd_history(self, isd_path=None, force=False, dry_run=False):
         """
-        Will download the `isd-history.csv` file if one of two conditions are true:
+        Will download the `isd-history.csv` file
+        if one of two conditions are true:
             * The `isd-history.csv` does not exist in the ../support/ folder
             * the `isd-history.csv` is older than 1 month
 
@@ -169,15 +170,15 @@ class ISD():
             ftp.retrbinary('RETR isd-history.csv',
                            open(isd_path, 'wb').write)
             success = True
-        except:
+        except Exception as err:
             print("'isd-history.csv' failed to download")
+            print("  {}".format(err))
             success = False
 
         print("Success: isd-history.csv loaded")
         ftp.quit()
 
         return success
-
 
     def parse_isd(self, isd_path=None):
         """
@@ -208,14 +209,14 @@ class ISD():
             isd_path = self.isd_path
             print("Using ISD path: {}".format(isd_path))
 
-
         df_isd = pd.read_csv(isd_path, sep=",", parse_dates=[9, 10])
 
         # Need to format the USAF with leading zeros as needed
         # should always be len of 6, WBAN len 5
+        # USAF now is a string, and has len 6 so no problem
 
-        df_isd['StationID'] = df_isd.USAF.map("{:06d}".format) + '-' + \
-            df_isd.WBAN.map("{:05d}".format)
+        df_isd['StationID'] = (df_isd['USAF'] + '-' +
+                               df_isd['WBAN'].map("{:05d}".format))
 
         df_isd = df_isd.set_index('StationID')
 
@@ -364,7 +365,6 @@ class GSOD():
 
         return self.stations
 
-
     def set_stations(self, usaf_wbans):
         """
         Loads in GSOD.stations the list of USAF-WBANs to download data for
@@ -406,35 +406,6 @@ class GSOD():
             wban = wban.zfill(5)
 
         return "{}-{}".format(usaf, wban)
-
-    def download_GSOD_multiple_years(start_year=2003):
-        """
-        Downloads data for multiple years,
-        from start_year (included) to current year
-
-        Args:
-        ------
-            start_year (int): Optional, defaults to 2003
-
-        Returns:
-        --------
-            True, will just download everything
-
-        """
-        end_year = datetime.date.today().year + 1
-
-        for year in range(start_year, end_year):
-
-            # Download the data
-            download_GSOD_year(year)
-
-            # cleanup empty files, extract the gzip files,
-            # and delete them afterwards
-            cleanup_extract(year)
-
-        print("\n\nDownloaded data for {} years".format(end_year - start_year))
-        return True
-
 
     def get_all_data(self):
         """
@@ -479,16 +450,16 @@ class GSOD():
                     i += 1
 
                     # Try downloading
-                    return_code, op_gz_path = self.get_GSOD_file(year=year,
-                                                          usaf_wban=usaf_wban)
-                    # return_codes = {0: 'success',
-                    #                 1: 'missing',
-                    #                 2: 'outdated'}
-                    if return_code == 0:
+                    (return_code,
+                     op_path) = self.get_GSOD_file(year=year,
+                                                   usaf_wban=usaf_wban)
+
+                    print(op_path)
+                    if return_code == ReturnCode.success:
                         c += 1
-                    elif return_code == 1:
+                    elif return_code == ReturnCode.missing:
                         r += 1
-                    elif return_code == 2:
+                    elif return_code == ReturnCode.outdated:
                         o += 1
 
                     bar.update(i)
@@ -499,7 +470,6 @@ class GSOD():
               "that was requested".format(o))
 
         return (c, r, o)
-
 
     def get_GSOD_file(self, year, usaf_wban, weather_dir=None, ftp=None):
         """
@@ -525,6 +495,9 @@ class GSOD():
         Returns:
         --------
 
+            return_code (ReturnCode): an enum showing the return status
+               ('success', 'missing', 'outdated')
+
             op_path (str): path to the uncompressed op_path,
                 False if didn't work
 
@@ -540,13 +513,11 @@ class GSOD():
         return_code, op_gz_path = self._download_GSOD_file(year=year,
                                                            usaf_wban=usaf_wban,
                                                            ftp=ftp)
-        if return_code == 0:
+        if return_code == ReturnCode.success:
             op_path = self._cleanup_extract_file(op_gz_path=op_gz_path,
                                                  delete_op_gz=True)
 
-        return op_path
-
-
+        return return_code, op_path
 
     def _download_GSOD_file(self, year, usaf_wban, weather_dir=None, ftp=None):
         """
@@ -572,7 +543,8 @@ class GSOD():
 
         Returns:
         --------
-            return_code (int): {0: 'success', 1: 'missing', 2: 'outdated'}
+            return_code (ReturnCode): an enum showing the return status
+               ('success', 'missing', 'outdated')
 
             local_path (str): the path to the downloaded *.op.gz file
 
@@ -592,8 +564,6 @@ class GSOD():
             # If not, create folder
             os.makedirs(weather_dir)
 
-
-
         # Whether you need to close the ftp connection or not
         to_close = False
         if ftp is None:
@@ -608,13 +578,12 @@ class GSOD():
                                  "'{}'".format(ftp.host))
 
         # Load dataframe of isd-history
-        df = self.isd.df
+        df_isd = self.isd.df
 
         # Open an error log file.
         ferror = open(os.path.join(SUPPORT_DIR, 'errors.txt'), 'w')
 
-
-                # Change current working directory (CWD)
+        # Change current working directory (CWD)
         # os.chdir(weatherfolder)
 
         # Construct file names
@@ -623,16 +592,18 @@ class GSOD():
         remote_folder = os.path.join('/pub/data/gsod/', str(year))
         local_folder = os.path.join(self.weather_dir, str(year))
 
-        remote_path =  os.path.join(remote_folder, op_name)
+        if not os.path.exists(local_folder):
+            os.makedirs(local_folder)
+
+        remote_path = os.path.join(remote_folder, op_name)
         local_path = os.path.join(local_folder, op_name)
 
-
         # Sanitize: should have been done already, but better safe... fast
-        # anuyways
+        # anyways
         usaf_wban = self.sanitize_usaf_wban(usaf_wban)
 
         # Check if there's data or not
-        end_year = df.loc[usaf_wban, 'END'].year
+        end_year = df_isd.loc[usaf_wban, 'END'].year
 
         return_code = None
         if year <= end_year:
@@ -647,19 +618,21 @@ class GSOD():
             try:
                 ftp.retrbinary('RETR ' + remote_path, open(local_path,
                                                            'wb').write)
-                print("Station downloaded:" + df['STATION NAME'][station])
+                print("Station downloaded:" + df_isd.loc[usaf_wban,
+                                                         'STATION NAME'])
 
-                return_code = 0
+                return_code = ReturnCode.success
 
-            except:
-                return_code = 1
+            except Exception as err:
+                return_code = ReturnCode.missing
                 ferror.write(op_name + " doesn't exist\r\n")
+                ferror.write("  {}".format(err))
 
         else:
-            return_code = 2
+            return_code = ReturnCode.outdated
             msg = ("{} doesn't have data up to this year. It stopped on:"
-                   "{}".format(df['STATION NAME'][station],
-                               df['END'][station].date()))
+                   "{}".format(df_isd.loc[usaf_wban, 'STATION NAME'],
+                               df_isd.loc[usaf_wban, 'END'].date()))
             warnings.warn(msg, UserWarning)
 
         if to_close:
@@ -667,7 +640,7 @@ class GSOD():
 
         return (return_code, local_path)
 
-    def cleanup_extract_file(self, op_gz_path, delete_op_gz=True):
+    def _cleanup_extract_file(self, op_gz_path, delete_op_gz=True):
         """
         Extracts the GSOD *.op.gz files to *.op and deletes the original gzip
         file. Also checks for empty files, and removes them
@@ -716,11 +689,10 @@ class GSOD():
 
         return op_path
 
-
-
     def cleanup_extract_all(year):
         """
-        Extracts the GSOD *.op.gz files to *.op and deletes the original gzip file
+        Extracts the GSOD *.op.gz files to *.op
+        and deletes the original gzip file
 
         Args:
         ------
@@ -780,7 +752,7 @@ class GSOD():
                             out_file.seek(-276, 2)
                             last = out_file.readlines()[-1].decode()
 
-                            date_string = re.split('\s+', last)[2]
+                            date_string = re.split(r'\s+', last)[2]
                             date = datetime.datetime \
                                 .strptime(date_string, '%Y%m%d') \
                                 .strftime('%d %b %Y')
@@ -1075,16 +1047,21 @@ def parse_gsod_op_file(op_path):
 # Gets only run if calling "python gsodpy.py" not if you import it
 if __name__ == '__main__':
 
-    # Update isd history (if needed)
-    update_isd_history()
+    gsod = GSOD()
 
     # This is what's run
-    year = get_valid_year("Enter a year in YYYY format. Leave blank for "
-                          "current year ({}):\n".format(
-                              datetime.date.today().year))
+    start_year = get_valid_year("Enter start year in YYYY format."
+                                "Leave blank for current year "
+                                "({}):\n".format(datetime.date.today().year))
 
+    end_year = get_valid_year("Enter end year in YYYY format."
+                              "Leave blank for current year "
+                              "({}):\n".format(datetime.date.today().year))
     # Download the data
-    download_GSOD_year(year)
+    gsod.set_years_range(start_year=start_year, end_year=end_year)
 
     # cleanup empty files, extract the gzip files, and delete them afterwards
-    cleanup_extract(year)
+    gsod.get_stations_from_file()
+
+    print("Starting retrieving!")
+    gsod.get_all_data()

@@ -1,5 +1,6 @@
 import sys
 import struct
+from enum import Enum
 
 """
 * types:
@@ -21,7 +22,7 @@ else:
     class_types = (type, types.ClassType)
     text_type = unicode
     binary_type = str
-    
+
 string_and_binary_types = string_types + (binary_type,)
 
 
@@ -36,8 +37,10 @@ def is_platform_linux():
 def is_platform_mac():
     return sys.platform == 'darwin'
 
+
 def is_platform_32bit():
     return struct.calcsize("P") * 8 < 64
+
 
 def is_list_like(obj):
     """
@@ -66,5 +69,14 @@ def is_list_like(obj):
     False
     """
 
-    return (hasattr(obj, '__iter__') and 
+    return (hasattr(obj, '__iter__') and
             not isinstance(obj, string_and_binary_types))
+
+
+class ReturnCode(Enum):
+    """
+    A simple Enum class to represent return codes
+    """
+    success = 0
+    missing = 1
+    outdated = 2

@@ -281,6 +281,8 @@ class NOAAData():
         if weather_dir is None:
             weather_dir = self.weather_dir
 
+        # TODO: CHECK IF FILE EXISTS BEFORE DOWNLOADING
+
         return_code, op_gz_path = self._get_year_file(year=year,
                                                       usaf_wban=usaf_wban,
                                                       ftp=ftp)

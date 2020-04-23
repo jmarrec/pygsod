@@ -163,7 +163,7 @@ def parse_isd_lite_op_file(op_path):
                            # skiprows=1,
                            # na_values=na_values, dtypes=dtypes)
 
-        i_op = pd.read_csv(op_path, sep=r'\s+', index_col='Date',
+        i_op = pd.read_csv(p, sep=r'\s+', index_col='Date',
                            parse_dates={'Date': ['YEAR', 'MONTH', 'DAY']},
                            header=None, names=names,
                            skiprows=1,

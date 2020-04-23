@@ -170,11 +170,11 @@ def parse_isd_lite_op_file(op_path):
                            na_values=na_values)
 
         # Parse USAF-WBAN from the file
-        usaf_wban = sanitize_usaf_wban(p)
-        usaf, wban = usaf_wban.split('-')
+        fname = os.path.basename(p)
+        usaf, wban, year = fname.split('-')
         i_op['USAF'] = usaf
         i_op['WBAN'] = wban
-        i_op['StationID'] = usaf_wban
+        i_op['StationID'] = "{}-{}".format(usaf, wban)
 
         all_ops.append(i_op)
     op = pd.concat(all_ops)
@@ -211,3 +211,4 @@ if __name__ == '__main__':
     isd_lite.get_all_data()
     print(isd_lite.ops_files)
     df = parse_isd_lite_op_file(isd_lite.ops_files)
+    print(df)

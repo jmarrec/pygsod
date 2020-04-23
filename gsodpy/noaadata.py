@@ -368,8 +368,8 @@ class NOAAData():
         if not os.path.exists(local_folder):
             os.makedirs(local_folder)
 
-        remote_path = os.path.join(remote_folder, op_name)
-        local_path = os.path.join(local_folder, op_name)
+        remote_path = os.path.join(remote_folder, op_name).replace("\\","/")
+        local_path = os.path.join(local_folder, op_name).replace("\\","/")
 
         # Sanitize: should have been done already, but better safe... fast
         # anyways

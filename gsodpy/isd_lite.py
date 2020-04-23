@@ -209,6 +209,7 @@ if __name__ == '__main__':
 
     print("Starting retrieving!")
     isd_lite.get_all_data()
-    print(isd_lite.ops_files)
     df = parse_isd_lite_op_file(isd_lite.ops_files)
+    fname = os.path.join(isd_lite.weather_dir, 'df_isd_lite.xlsx')
+    df.to_excel(fname)
     print(df)

@@ -149,7 +149,7 @@ def get_valid_year(prompt):
             print("Please enter an integer between 2000 and 2020")
             continue
 
-        if year < 2000 or year > 2020:
+        if year < 1950 or year > 2020:
             print("year needs to be between 2000 and 2020!")
             continue
         else:

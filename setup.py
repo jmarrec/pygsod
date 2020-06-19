@@ -85,7 +85,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['pandas', 'pathlib',
                       # NOT progressbar, mind the 2!
-                      'progressbar2'],
+                      'progressbar2',
+                      'pyepw'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

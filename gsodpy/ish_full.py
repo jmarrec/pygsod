@@ -20,6 +20,7 @@ from gsodpy.constants import WEATHER_DIR
 from gsodpy.utils import (DataType, is_list_like, get_valid_year,
                           sanitize_usaf_wban)
 
+
 def parse_ish_file(op_path):
     """
     Parses the Weather File downloaded from NOAA's Integrated Surface Data 
@@ -186,7 +187,8 @@ def parse_ish_file(op_path):
     all_ops = []
     for p in op_path:
         i_op = pd.read_fwf(p, index_col='Date',
-                           parse_dates={'Date': ['YEAR', 'MONTH', 'DAY','TIME']},
+                           parse_dates={
+                               'Date': ['YEAR', 'MONTH', 'DAY', 'TIME']},
                            colspecs=colspecs, header=None, names=names,
                            skiprows=1,
                            na_values=na_values, dtypes=dtypes)
@@ -207,7 +209,7 @@ def parse_ish_file(op_path):
     # Convert from IP units to SI (used by E+)
     print(op)
     # Convert temperatures
-    
+
     op['TEMP_C'] = (op['TEMP_F'] - 32) * 5 / 9.0
     op['DEWP_C'] = (op['DEWP_F'] - 32) * 5 / 9.0
 #     op['MAX_C'] = (op['MAX_F'] - 32) * 5 / 9.0
@@ -224,7 +226,7 @@ def parse_ish_file(op_path):
 #     op['PRCP_mm'] = op['PRCP_in'] * 25.4
 #     # Convert miles to km (1 mile = 1.60934 km)
 #     op['VISIB_km'] = op['VISIB_mi'] * 1.60934
-    
+
     col_order = ['StationID', 'USAF', 'WBAN',
                  'TEMP_F', 'TEMP_C', 'TEMP_Count',
                  'DEWP_F', 'DEWP_C', 'DEWP_Count',
@@ -246,27 +248,27 @@ def parse_ish_file(op_path):
 
 if __name__ == '__main__':
 
-	isd_full = NOAAData(data_type=DataType.isd_full)
+    isd_full = NOAAData(data_type=DataType.isd_full)
 
-	# This is what's run
-	start_year = get_valid_year("Enter start year in YYYY format."
-	                            "Leave blank for current year "
-	                            "({}):\n".format(datetime.date.today().year))
+    # This is what's run
+    start_year = get_valid_year("Enter start year in YYYY format."
+                                "Leave blank for current year "
+                                "({}):\n".format(datetime.date.today().year))
 
-	end_year = get_valid_year("Enter end year in YYYY format."
-	                          "Leave blank for current year "
-	                          "({}):\n".format(datetime.date.today().year))
-	# Download the data
-	isd_full.set_years_range(start_year=start_year, end_year=end_year)
+    end_year = get_valid_year("Enter end year in YYYY format."
+                              "Leave blank for current year "
+                              "({}):\n".format(datetime.date.today().year))
+    # Download the data
+    isd_full.set_years_range(start_year=start_year, end_year=end_year)
 
-	# cleanup empty files, extract the gzip files, and delete them afterwards
-	isd_full.get_stations_from_file(
-	    weather_stations_file=os.path.join(WEATHER_DIR,
-	                                       'weather_stations.txt'))
+    # cleanup empty files, extract the gzip files, and delete them afterwards
+    isd_full.get_stations_from_file(
+        weather_stations_file=os.path.join(WEATHER_DIR,
+                                           'weather_stations.txt'))
 
-	print("Starting retrieving!")
-	isd_full.get_all_data()
-	df = parse_ish_file(isd_full.ops_files)
-	fname = os.path.join(isd_full.weather_dir, 'df_isd_full.xlsx')
-	df.to_excel(fname)
-	print(df)
+    print("Starting retrieving!")
+    isd_full.get_all_data()
+    df = parse_ish_file(isd_full.ops_files)
+    fname = os.path.join(isd_full.weather_dir, 'df_isd_full.xlsx')
+    df.to_excel(fname)
+    print(df)

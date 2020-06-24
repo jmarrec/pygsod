@@ -99,7 +99,8 @@ def parse_ish_file(op_path):
                 (134, 135),
                 (135, 136),
                 (136, 137),
-                (137, 138)]
+                (137, 138),
+                (65, 69)]
     # Define column names
     names = ['USAF',
              'WBAN',
@@ -107,11 +108,11 @@ def parse_ish_file(op_path):
              'MONTH',
              'DAY',
              'TIME',
-             'TEMP_F',
+             'TEMP_C',
              'TEMP_Count',
-             'DEWP_F',
+             'DEWP_C',
              'DEWP_Count',
-             'SLP_mbar',
+             'SLP_hPa',
              'SLP_Count',
              'STP_mbar',
              'STP_Count',
@@ -133,11 +134,12 @@ def parse_ish_file(op_path):
              'FRSHTT_Snow_or_Ice_Pellets',
              'FRSHTT_Hail',
              'FRSHTT_Thunder',
-             'FRSHTT_Tornado_or_Funnel_Cloud']
+             'FRSHTT_Tornado_or_Funnel_Cloud',
+             'WIND_SPEED']
     # Force dtypes
     dtypes = {'DAY': np.int32,
               'TIME': np.int32,
-              'DEWP': np.float64,
+              'DEWP_C': np.float64,
               'DEWP_Count': np.int32,
               'FRSHTT_Fog': bool,
               'FRSHTT_Hail': bool,
@@ -147,6 +149,7 @@ def parse_ish_file(op_path):
               'FRSHTT_Tornado_or_Funnel_Cloud': bool,
               'GUST': np.float64,
               'MAX': np.float64,
+              'MAX_F': np.float64,
               'MAX_Flag': str,
               'MIN': np.float64,
               'MIN_Flag': str,
@@ -167,11 +170,12 @@ def parse_ish_file(op_path):
               'WBAN': np.int32,
               'WDSP': np.float64,
               'WDSP_Count': np.int32,
-              'YEAR': np.int32}
+              'YEAR': np.int32,
+              'WIND_SPEED': np.float64}
     # Define NA values per column, based on gsod format description
-    na_values = {'TEMP_F': 9999.9,
-                 'DEWP_F': 9999.9,
-                 'SLP_mbar': 9999.9,
+    na_values = {'TEMP_C': 9999.9,
+                 'DEWP_C': 9999.9,
+                 'SLP_hPa': 9999.9,
                  'STP_mbar': 9999.9,
                  'VISIB_mi': 999.9,
                  'WDSP_kn': 999.9,
@@ -192,6 +196,16 @@ def parse_ish_file(op_path):
                            colspecs=colspecs, header=None, names=names,
                            skiprows=1,
                            na_values=na_values, dtypes=dtypes)
+
+        i_op['TEMP_C'] = i_op['TEMP_C'] / 10 # scaling factor: 10
+        i_op['DEWP_C'] = i_op['DEWP_C'] / 10 # scaling factor: 10
+        i_op['SLP_hPa'] = i_op['SLP_hPa'] / 10 # scaling factor: 10
+        i_op['WIND_SPEED'] = i_op['WIND_SPEED'] / 10 # scaling factor: 10
+
+        i_op['SLP_Pa'] = i_op['SLP_hPa'] * 100
+
+        fname = os.path.join(isd_full.weather_dir, p + '.xlsx')
+        i_op.to_excel(fname)
         all_ops.append(i_op)
     op = pd.concat(all_ops)
     # Format USAF and WBAN as fixed-length numbers (strings)
@@ -207,29 +221,29 @@ def parse_ish_file(op_path):
                  'FRSHTT_Snow_or_Ice_Pellets', 'FRSHTT_Hail', 'FRSHTT_Thunder',
                  'FRSHTT_Tornado_or_Funnel_Cloud']].applymap(bool)
     # Convert from IP units to SI (used by E+)
-    print(op)
+
     # Convert temperatures
 
-    op['TEMP_C'] = (op['TEMP_F'] - 32) * 5 / 9.0
-    op['DEWP_C'] = (op['DEWP_F'] - 32) * 5 / 9.0
-#     op['MAX_C'] = (op['MAX_F'] - 32) * 5 / 9.0
-#     op['MIN_C'] = (op['MIN_F'] - 32) * 5 / 9.0
+    # op['TEMP_C'] = (op['TEMP_F'] - 32) * 5 / 9.0
+    # op['DEWP_C'] = (op['DEWP_F'] - 32) * 5 / 9.0
+    # op['MAX_C'] = (op['MAX_F'] - 32) * 5 / 9.0
+    # op['MIN_C'] = (op['MIN_F'] - 32) * 5 / 9.0
     # Convert millibars to Pa (1 mbar = 100 Pa)
-    op['SLP_Pa'] = op['SLP_mbar'] * 0.01
-#     op['STP_Pa'] = op['STP_mbar'] * 0.01
-#     # Convert knots to m/s (1 nautical mile = 1.852 km)
-#     op['WDSP_m/s'] = op['WDSP_kn'] * 1852 / 3600.0
-#     op['MXSPD_m/s'] = op['MXSPD_kn'] * 1852 / 3600.0
-#     op['GUST_m/s'] = op['GUST_kn'] * 1852 / 3600.0
-#     # Convert inches to meter multiples (1 in = 2.54 cm)
-#     op['SNDP_cm'] = op['SNDP_in'] * 2.54
-#     op['PRCP_mm'] = op['PRCP_in'] * 25.4
-#     # Convert miles to km (1 mile = 1.60934 km)
-#     op['VISIB_km'] = op['VISIB_mi'] * 1.60934
+    # op['SLP_Pa'] = op['SLP_mbar'] * 0.01
+    # op['STP_Pa'] = op['STP_mbar'] * 0.01
+    # Convert knots to m/s (1 nautical mile = 1.852 km)
+    # op['WDSP_m/s'] = op['WDSP_kn'] * 1852 / 3600.0
+    # op['MXSPD_m/s'] = op['MXSPD_kn'] * 1852 / 3600.0
+    # op['GUST_m/s'] = op['GUST_kn'] * 1852 / 3600.0
+    # Convert inches to meter multiples (1 in = 2.54 cm)
+    # op['SNDP_cm'] = op['SNDP_in'] * 2.54
+    # op['PRCP_mm'] = op['PRCP_in'] * 25.4
+    # Convert miles to km (1 mile = 1.60934 km)
+    # op['VISIB_km'] = op['VISIB_mi'] * 1.60934
 
     col_order = ['StationID', 'USAF', 'WBAN',
-                 'TEMP_F', 'TEMP_C', 'TEMP_Count',
-                 'DEWP_F', 'DEWP_C', 'DEWP_Count',
+                 'TEMP_C', 'TEMP_Count',
+                 'DEWP_C', 'DEWP_Count',
                  'SLP_mbar', 'SLP_Pa', 'SLP_Count',
                  'STP_mbar', 'STP_Pa', 'STP_Count',
                  'VISIB_mi', 'VISIB_km', 'VISIB_Count',
@@ -243,7 +257,7 @@ def parse_ish_file(op_path):
                  'FRSHTT_Fog', 'FRSHTT_Rain_or_Drizzle',
                  'FRSHTT_Snow_or_Ice_Pellets', 'FRSHTT_Hail',
                  'FRSHTT_Thunder', 'FRSHTT_Tornado_or_Funnel_Cloud']
-#     op = op[col_order]
+    # op = op[col_order]
     return op
 
 if __name__ == '__main__':
@@ -269,6 +283,6 @@ if __name__ == '__main__':
     print("Starting retrieving!")
     isd_full.get_all_data()
     df = parse_ish_file(isd_full.ops_files)
-    fname = os.path.join(isd_full.weather_dir, 'df_isd_full.xlsx')
-    df.to_excel(fname)
+    # fname = os.path.join(isd_full.weather_dir, 'df_isd_full.xlsx')
+    # df.to_excel(fname)
     print(df)

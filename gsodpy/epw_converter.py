@@ -1,4 +1,4 @@
-from gsodpy.constants import (EPW_DIR, WEATHER_DIR)
+from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
 import os
 from pyepw.epw import EPW
 from gsodpy.ish_full import parse_ish_file
@@ -6,12 +6,16 @@ import pandas as pd
 import numpy as np
 
 
-def clean_df(df):
+def clean_df(df, file):
 
-    print("years downloaded:", set(df.index.year))
-    year = int(input("enter the year you want to convert:"))
-    df = df[df.index.year == year]
+    # print("years downloaded:", set(df.index.year))
+    # year = int(input("enter the year you want to convert:"))
+    # df = df[df.index.year == year]
+    print("start parsing", file)
     print("length of original dataset:", len(df))
+
+    df = df.groupby(pd.Grouper(freq='1H')).mean()
+    print("length of data after groupby hour", len(df))
 
     start_date = '{}-01-01 00:00:00'.format(df.index[0].year)
     end_date = '{}-12-31 23:00:00'.format(df.index[0].year)
@@ -21,7 +25,7 @@ def clean_df(df):
     for idx in missing_hours:
         df.loc[idx] = np.NaN  # make the missing rows filled with NaN
 
-    print("length of processed dataset:", len(df))
+    print("length of processed dataset:", len(df), '\n')
     # sort to make new rows in place, otherwise the Nan rows are at the end
     df = df.sort_index()
     df = df.interpolate()  # interpolate values
@@ -32,15 +36,12 @@ def clean_df(df):
 
     return df
 
-if __name__ == '__main__':
 
-    df_path = os.path.join(WEATHER_DIR, 'isd_full/df_isd_full.xlsx')
-    df = pd.read_excel(df_path, index_col=0)
-    df = clean_df(df)
+def epw_convert(df, root, file):
 
     epw = EPW()
     epw_file = os.path.join(
-        EPW_DIR, 'USA_NY_New.York-J.F.Kennedy.Intl.AP.744860_TMY3.epw')
+        SUPPORT_DIR, 'USA_NY_New.York-J.F.Kennedy.Intl.AP.744860_TMY3.epw')
     epw.read(epw_file)
 
     for i, wd in enumerate(epw.weatherdata):
@@ -77,12 +78,35 @@ if __name__ == '__main__':
         #      Pressure
         # ----------------
 
-        value_pressure = df['SLP_Pa'][i] * 1000  # convert kPa to Pa
+        value_pressure = df['SLP_Pa'][i]
         if value_pressure >= 120000:
             # condition of EPW package, value need to be smaller 120000 for
             # field atmosphere pressure
             value_pressure = 119999
+        elif value_pressure <= 31000:
+        	value_pressure = 31001
+
         wd.atmospheric_station_pressure = value_pressure
 
-    epw_file_new = epw_file[:-4] + "_new" + ".epw"
+        #      Wind Speed
+        # ----------------
+
+        value_windspeed = df['WIND_SPEED'][i]
+        if value_windspeed >= 40:
+        	value_windspeed = 39.9 # value need to be smaller 40.0
+        wd.wind_speed = value_windspeed        
+
+    epw_file_new = os.path.join(
+        root, file[:-5] + '.epw')
     epw.save(epw_file_new)
+
+
+if __name__ == '__main__':
+
+    for root, dirs, files in os.walk(WEATHER_DIR + '/isd_full'):
+        for file in files:
+            if file.endswith("xlsx"):
+                df_path = os.path.join(root, file)
+                df = pd.read_excel(df_path, index_col=0)
+                df = clean_df(df, file)
+                epw_convert(df, root, file)

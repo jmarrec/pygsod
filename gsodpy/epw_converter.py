@@ -94,7 +94,12 @@ def epw_convert(df, root, file):
         value_windspeed = df['WIND_SPEED'][i]
         if value_windspeed >= 40:
         	value_windspeed = 39.9 # value need to be smaller 40.0
-        wd.wind_speed = value_windspeed        
+        wd.wind_speed = value_windspeed     
+
+        #      Wind Direction
+        # ----------------
+        value_winddirection = df['WIND_DIRECTION'][i]
+        wd.wind_direction = value_winddirection
 
     epw_file_new = os.path.join(
         root, file[:-5] + '.epw')

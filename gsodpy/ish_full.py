@@ -100,7 +100,8 @@ def parse_ish_file(op_path):
                 (135, 136),
                 (136, 137),
                 (137, 138),
-                (65, 69)]
+                (65, 69),
+                (60,63)]
     # Define column names
     names = ['USAF',
              'WBAN',
@@ -135,7 +136,8 @@ def parse_ish_file(op_path):
              'FRSHTT_Hail',
              'FRSHTT_Thunder',
              'FRSHTT_Tornado_or_Funnel_Cloud',
-             'WIND_SPEED']
+             'WIND_SPEED',
+             'WIND_DIRECTION']
     # Force dtypes
     dtypes = {'DAY': np.int32,
               'TIME': np.int32,
@@ -171,11 +173,12 @@ def parse_ish_file(op_path):
               'WDSP': np.float64,
               'WDSP_Count': np.int32,
               'YEAR': np.int32,
-              'WIND_SPEED': np.float64}
+              'WIND_SPEED': np.float64,
+              'WIND_DIRECTION': np.int32}
     # Define NA values per column, based on gsod format description
-    na_values = {'TEMP_C': 9999.9,
-                 'DEWP_C': 9999.9,
-                 'SLP_hPa': 9999.9,
+    na_values = {'TEMP_C': 9999,
+                 'DEWP_C': 9999,
+                 'SLP_hPa': 99999,
                  'STP_mbar': 9999.9,
                  'VISIB_mi': 999.9,
                  'WDSP_kn': 999.9,
@@ -184,7 +187,9 @@ def parse_ish_file(op_path):
                  'MAX_F': 9999.9,
                  'MIN_F': 9999.9,
                  'PRCP_in': 99.9,
-                 'SNDP_in': 999.9}
+                 'SNDP_in': 999.9,
+                 'WIND_SPEED': 9999,
+                 'WIND_DIRECTION': 999}
     # If a single path, put it in a list of one-element
     if not is_list_like(op_path):
         op_path = [op_path]

@@ -1,13 +1,17 @@
 
 '''
 
-Author: Julien Marrec
+Author: Julien Marrec， Hang Li
 Date: 2020-06-18
 
 Download weather data for a year (user-specified), from NOAA
 Extracts the gzip files and cleans up afterwards
 Weather stations are stored into the file `weatherfiles.txt`
 with the syntax "USAF-WBAN"
+
+Parameters can be added but not currently used in EnergyPlus calculations:
+1. Ceiling height
+2. Visibility
 
 '''
 import os
@@ -20,6 +24,39 @@ from gsodpy.constants import WEATHER_DIR
 from gsodpy.utils import (DataType, is_list_like, get_valid_year,
                           sanitize_usaf_wban)
 
+
+def parse_rh(data):
+    if 'RH1' in data:
+        loc = data.find('RH1')
+        rh = int(data[loc+7:loc+10])
+        if rh == 999:
+        	return np.nan
+        else:
+        	return rh
+    else:
+        return np.nan
+
+def parse_total_sky_cover(data):
+	if 'GF1' in data:
+		loc = data.find('GF1')
+		total_sky_cover = int(data[loc+3:loc+5])
+		if total_sky_cover == 99:
+			return np.nan
+		else:
+			return total_sky_cover
+	else:
+		return np.nan
+
+def parse_opaque_sky_cover(data):
+	if 'GF1' in data:
+		loc = data.find('GF1')
+		opaque_sky_cover = int(data[loc+5:loc+7])
+		if opaque_sky_cover == 99:
+			return np.nan
+		else:	
+			return opaque_sky_cover
+	else:
+		return np.nan
 
 def parse_ish_file(op_path):
     """
@@ -78,30 +115,9 @@ def parse_ish_file(op_path):
                 (93, 98),
                 (98, 99),
                 (99, 104),
-                (104, 105),
-                (57, 63),
-                (64, 66),
-                (68, 73),
-                (74, 76),
-                (78, 83),
-                (84, 86),
-                (88, 93),
-                (95, 100),
-                (102, 108),
-                (108, 109),
-                (110, 116),
-                (116, 117),
-                (118, 123),
-                (123, 124),
-                (125, 130),
-                (132, 133),
-                (133, 134),
-                (134, 135),
-                (135, 136),
-                (136, 137),
-                (137, 138),
                 (65, 69),
-                (60,63)]
+                (60,63),
+                (105,-1)]
     # Define column names
     names = ['USAF',
              'WBAN',
@@ -114,64 +130,20 @@ def parse_ish_file(op_path):
              'DEWP_C',
              'DEWP_Count',
              'SLP_hPa',
-             'SLP_Count',
-             'STP_mbar',
-             'STP_Count',
-             'VISIB_mi',
-             'VISIB_Count',
-             'WDSP_kn',
-             'WDSP_Count',
-             'MXSPD_kn',
-             'GUST_kn',
-             'MAX_F',
-             'MAX_Flag',
-             'MIN_F',
-             'MIN_Flag',
-             'PRCP_in',
-             'PRCP_Flag',
-             'SNDP_in',
-             'FRSHTT_Fog',
-             'FRSHTT_Rain_or_Drizzle',
-             'FRSHTT_Snow_or_Ice_Pellets',
-             'FRSHTT_Hail',
-             'FRSHTT_Thunder',
-             'FRSHTT_Tornado_or_Funnel_Cloud',
              'WIND_SPEED',
-             'WIND_DIRECTION']
+             'WIND_DIRECTION',
+             'ADD_DATA']
     # Force dtypes
     dtypes = {'DAY': np.int32,
               'TIME': np.int32,
               'DEWP_C': np.float64,
               'DEWP_Count': np.int32,
-              'FRSHTT_Fog': bool,
-              'FRSHTT_Hail': bool,
-              'FRSHTT_Rain_or_Drizzle': bool,
-              'FRSHTT_Snow_or_Ice_Pellets': bool,
-              'FRSHTT_Thunder': bool,
-              'FRSHTT_Tornado_or_Funnel_Cloud': bool,
-              'GUST': np.float64,
-              'MAX': np.float64,
-              'MAX_F': np.float64,
-              'MAX_Flag': str,
-              'MIN': np.float64,
-              'MIN_Flag': str,
               'MONTH': np.int32,
-              'MXSPD': np.float64,
-              'PRCP': np.float64,
-              'PRCP_Flag': str,
-              'SLP': np.float64,
-              'SLP_Count': np.int32,
-              'SNDP': np.float64,
-              'STP': np.float64,
-              'STP_Count': np.int32,
-              'TEMP': np.float64,
+              'SLP_hPa': np.float64,
+              'TEMP_C': np.float64,
               'TEMP_Count': np.int32,
               'USAF': np.int32,
-              'VISIB': np.float64,
-              'VISIB_Count': np.int32,
               'WBAN': np.int32,
-              'WDSP': np.float64,
-              'WDSP_Count': np.int32,
               'YEAR': np.int32,
               'WIND_SPEED': np.float64,
               'WIND_DIRECTION': np.int32}
@@ -209,7 +181,13 @@ def parse_ish_file(op_path):
 
         i_op['SLP_Pa'] = i_op['SLP_hPa'] * 100
 
-        fname = os.path.join(isd_full.weather_dir, p + '.xlsx')
+
+        # ADDITIONAL DATA SECTION
+        i_op['RELATIVE_HUMIDITY_PERCENTAGE'] = i_op['ADD_DATA'].apply(parse_rh)
+        i_op['TOTAL_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_total_sky_cover)
+        i_op['OPAQUE_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_opaque_sky_cover)
+
+        fname = os.path.join(WEATHER_DIR, p + '.xlsx')
         i_op.to_excel(fname)
         all_ops.append(i_op)
     op = pd.concat(all_ops)
@@ -217,14 +195,7 @@ def parse_ish_file(op_path):
     op.USAF = op.USAF.map(str).str.zfill(6)
     op.WBAN = op.WBAN.map(str).str.zfill(5)
     op['StationID'] = op.USAF + "-" + op.WBAN
-    # Change these to bool, easier if you want to
-    # filter by these columns directly
-    op[['FRSHTT_Fog', 'FRSHTT_Rain_or_Drizzle',
-        'FRSHTT_Snow_or_Ice_Pellets', 'FRSHTT_Hail', 'FRSHTT_Thunder',
-        'FRSHTT_Tornado_or_Funnel_Cloud'
-        ]] = op[['FRSHTT_Fog', 'FRSHTT_Rain_or_Drizzle',
-                 'FRSHTT_Snow_or_Ice_Pellets', 'FRSHTT_Hail', 'FRSHTT_Thunder',
-                 'FRSHTT_Tornado_or_Funnel_Cloud']].applymap(bool)
+
     # Convert from IP units to SI (used by E+)
 
     # Convert temperatures
@@ -246,22 +217,22 @@ def parse_ish_file(op_path):
     # Convert miles to km (1 mile = 1.60934 km)
     # op['VISIB_km'] = op['VISIB_mi'] * 1.60934
 
-    col_order = ['StationID', 'USAF', 'WBAN',
-                 'TEMP_C', 'TEMP_Count',
-                 'DEWP_C', 'DEWP_Count',
-                 'SLP_mbar', 'SLP_Pa', 'SLP_Count',
-                 'STP_mbar', 'STP_Pa', 'STP_Count',
-                 'VISIB_mi', 'VISIB_km', 'VISIB_Count',
-                 'WDSP_kn', 'WDSP_m/s', 'WDSP_Count',
-                 'MXSPD_kn', 'MXSPD_m/s',
-                 'GUST_kn', 'GUST_m/s',
-                 'MAX_F', 'MAX_C', 'MAX_Flag',
-                 'MIN_F', 'MIN_C', 'MIN_Flag',
-                 'PRCP_in', 'PRCP_mm', 'PRCP_Flag',
-                 'SNDP_in', 'SNDP_cm',
-                 'FRSHTT_Fog', 'FRSHTT_Rain_or_Drizzle',
-                 'FRSHTT_Snow_or_Ice_Pellets', 'FRSHTT_Hail',
-                 'FRSHTT_Thunder', 'FRSHTT_Tornado_or_Funnel_Cloud']
+    # col_order = ['StationID', 'USAF', 'WBAN',
+    #              'TEMP_C', 'TEMP_Count',
+    #              'DEWP_C', 'DEWP_Count',
+    #              'SLP_mbar', 'SLP_Pa', 'SLP_Count',
+    #              'STP_mbar', 'STP_Pa', 'STP_Count',
+    #              'VISIB_mi', 'VISIB_km', 'VISIB_Count',
+    #              'WDSP_kn', 'WDSP_m/s', 'WDSP_Count',
+    #              'MXSPD_kn', 'MXSPD_m/s',
+    #              'GUST_kn', 'GUST_m/s',
+    #              'MAX_F', 'MAX_C', 'MAX_Flag',
+    #              'MIN_F', 'MIN_C', 'MIN_Flag',
+    #              'PRCP_in', 'PRCP_mm', 'PRCP_Flag',
+    #              'SNDP_in', 'SNDP_cm',
+    #              'FRSHTT_Fog', 'FRSHTT_Rain_or_Drizzle',
+    #              'FRSHTT_Snow_or_Ice_Pellets', 'FRSHTT_Hail',
+    #              'FRSHTT_Thunder', 'FRSHTT_Tornado_or_Funnel_Cloud']
     # op = op[col_order]
     return op
 

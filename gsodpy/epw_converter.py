@@ -101,6 +101,23 @@ def epw_convert(df, root, file):
         value_winddirection = df['WIND_DIRECTION'][i]
         wd.wind_direction = value_winddirection
 
+        #	   Relative Humidity Percentage
+        # ----------------
+        value_rh = df['RELATIVE_HUMIDITY_PERCENTAGE'][i]
+        wd.relative_humidity = value_rh
+
+        #	   Total Sky Cover
+        # ----------------   
+        value_total_sky_cover = df['TOTAL_SKY_COVER'][i] / 2
+        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth scaling 
+        wd.total_sky_cover = value_total_sky_cover
+
+        #	   Opaque Sky Cover
+        # ----------------   
+        value_opaque_sky_cover = df['OPAQUE_SKY_COVER'][i] / 2
+        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth scaling 
+        wd.opaque_sky_cover = value_opaque_sky_cover
+
     epw_file_new = os.path.join(
         root, file[:-5] + '.epw')
     epw.save(epw_file_new)

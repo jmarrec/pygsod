@@ -27,7 +27,7 @@ from gsodpy.utils import (DataType, is_list_like, get_valid_year,
 
 def parse_rh(data):
     if 'RH1' in data:
-        loc = data.find('RH1')
+        loc = data.find('RH3')
         rh = int(data[loc+7:loc+10])
         if rh == 999:
         	return np.nan

@@ -30,7 +30,7 @@ def parse_rh(data):
         loc = data.find('RH3')
         rh = int(data[loc+7:loc+10])
         if rh == 999:
-        	return np.nan
+        	return np.nan # if using 999 therew will be issue in interpolating
         else:
         	return rh
     else:
@@ -55,6 +55,28 @@ def parse_opaque_sky_cover(data):
 			return np.nan
 		else:	
 			return opaque_sky_cover
+	else:
+		return np.nan
+
+def parse_zenith(data):
+	if 'GQ1' in data:
+		loc = data.find('GQ1')
+		zenith_angle = int(data[loc+7:loc+11])
+		if zenith_angle == 9999:
+			return np.nan
+		else:
+			return zenith_angle / 10 # scaling factor = 10
+	else:
+		return np.nan
+
+def parse_azimuth(data):
+	if 'GQ1' in data:
+		loc = data.find('GQ1')
+		azimuth_angle = int(data[loc+12:loc+16])
+		if azimuth_angle == 9999:
+			return np.nan
+		else:
+			return azimuth_angle / 10 # scaling factor = 10
 	else:
 		return np.nan
 
@@ -186,6 +208,8 @@ def parse_ish_file(op_path):
         i_op['RELATIVE_HUMIDITY_PERCENTAGE'] = i_op['ADD_DATA'].apply(parse_rh)
         i_op['TOTAL_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_total_sky_cover)
         i_op['OPAQUE_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_opaque_sky_cover)
+        i_op['AZIMUTH_ANGLE'] = i_op['ADD_DATA'].apply(parse_azimuth)
+        i_op['ZENITH_ANGLE'] = i_op['ADD_DATA'].apply(parse_zenith)
 
         fname = os.path.join(WEATHER_DIR, p + '.xlsx')
         i_op.to_excel(fname)

@@ -197,6 +197,7 @@ def parse_ish_file(op_path):
                            na_values=na_values, dtypes=dtypes)
 
         i_op['TEMP_C'] = i_op['TEMP_C'] / 10 # scaling factor: 10
+        i_op['TEMP_F'] = i_op['TEMP_C'] * 1.8 + 32 # calculate C to F
         i_op['DEWP_C'] = i_op['DEWP_C'] / 10 # scaling factor: 10
         i_op['SLP_hPa'] = i_op['SLP_hPa'] / 10 # scaling factor: 10
         i_op['WIND_SPEED'] = i_op['WIND_SPEED'] / 10 # scaling factor: 10

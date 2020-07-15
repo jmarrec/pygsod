@@ -17,4 +17,5 @@ RUN mkdir /results &&\
 RUN pip3 install -e .
 
 # Entrypoint to containerized app
+RUN chmod +x docker-entrypoint.sh
 ENTRYPOINT ["/gsodpy/docker-entrypoint.sh"]

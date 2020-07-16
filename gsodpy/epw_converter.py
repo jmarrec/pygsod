@@ -7,7 +7,9 @@ import numpy as np
 
 
 def clean_df(df, file):
-
+    """clean raw data into hourly
+       interpolate for missing data
+    """
     # print("years downloaded:", set(df.index.year))
     # year = int(input("enter the year you want to convert:"))
     # df = df[df.index.year == year]
@@ -38,6 +40,7 @@ def clean_df(df, file):
 
 
 def epw_convert(df, root, file):
+    """Convert ish_full into EPW file """
 
     epw = EPW()
     epw_file = os.path.join(

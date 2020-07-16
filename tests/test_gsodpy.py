@@ -1,16 +1,19 @@
 # In top level directory, run with python -m pytest
 # so that the folder is added to PYTHONPATH
 import pytest
-from mock import patch
+# from mock import patch
 
 # Right now I have to do this, so that the pandas monkeypatching is done...
-from gsodpy.gsodpy import GSOD, ISD
-
+# from gsodpy.gsodpy import GSOD, ISD
+from gsodpy.epw_converter import clean_df, epw_convert
+from gsodpy.ish_full import parse_ish_file
+from gsodpy.output import Output
 import pandas as pd
 #import numpy as np
 import os
 import datetime
 
+from pkg_resources import resource_filename
 
 # This is used by almost all tests, so declaring it as global constant
 
@@ -44,7 +47,6 @@ class TestGSOD():
         assert gsod.isd.isd_path
         assert gsod.isd.isd_path == 'tests/test_isd_path.csv'
 
-
     def test_set_years(self):
         """
         py.test for GSOD.set_years with bad years
@@ -59,8 +61,7 @@ class TestGSOD():
         """
         gsod = GSOD()
         with pytest.raises(ValueError):
-            gsod.set_years([2016,2004, '2003', 'not an int'])
-
+            gsod.set_years([2016, 2004, '2003', 'not an int'])
 
     def test_set_years_range(self):
         """
@@ -127,7 +128,6 @@ class TestGSOD():
                                                 '064500-99999'])
 
 
-
 class TestGSODDownloads():
     """
     py.test class for tests around GSOD's function for
@@ -145,7 +145,6 @@ class TestGSODDownloads():
         assert return_code == 0
         assert local_path == 'weather_files/2017/064500-99999.op.gz'
         assert os.path.isfile(local_path)
-
 
 
 class TestISD():
@@ -199,5 +198,56 @@ class TestISD():
         assert closest == '064500-99999'
 
 
+class TestISDFULL():
+    """
+    py.test class for isd_full
+    """
+
+    @pytest.fixture(scope="class", autouse=False)
+    def df(self):
+        f = resource_filename(
+            __name__, '/744860-94789-2012')
+        df = parse_ish_file(f)
+
+        return df
+
+    def test_parse_ish_file(self, df):
+        # isd_full = NOAAData(data_type=DataType.isd_full)
+        # isd_full.set_years_range(2012, 2012)
+        # isd_full.stations = ['744860-94789']
+        # isd_full.get_all_data()
+
+        assert isinstance(df, pd.DataFrame)
+        assert df.shape == (13520, 18)
+
+    """
+    test for epw_converter
+    """
+
+    def test_clean_df(self, df):
+        #      Test clean_df()
+        # ---------------- 
+        df_hourly = clean_df(df, 'test')
+        assert df_hourly.shape == (8784, 12)  # year of 2012 has 8784 hrs
+
+        #      Test output_daily()
+        # ---------------- 
+        args = {'type_of_output': 'CSV',
+                'hdd_threshold': 65,
+                'cdd_threshold': 65}
+        o = Output(args)
+        df_daily = o.output_daily(df_hourly)
+        assert df_daily.shape == (366, 11)
 
 
+        #      Test output_monthly()
+        # ----------------   
+        df_monthly = o.output_monthly(
+            df_hourly, df_daily)
+        assert df_monthly.shape == (12, 11)
+        
+        # TO DO
+        # ADD TEST FOR EPW and JSON?
+
+    # def test_epw_convert(self):
+    #     epw_convert(df, root, file)

@@ -1,6 +1,7 @@
 """Module to launch in the docker."""
 import json
 import os
+from gsodpy.output import Output
 
 if __name__ == '__main__':
 
@@ -21,3 +22,6 @@ if __name__ == '__main__':
 		args = json.load(json_file)
 
 	print(args)
+
+	o = Output(args)
+	o.output_files()

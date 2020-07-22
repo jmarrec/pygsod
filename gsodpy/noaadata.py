@@ -179,11 +179,13 @@ class NOAAData():
         df = pd.read_csv(isd_history_file_name)
         df_sub = df[(df['CTRY'] == country) & (df['STATE'] == state)
                     & (df['STATION NAME'] == station_name)]
-
-        self.stations = [str(df_sub['USAF'].values[0]) +
-                         '-' + str(df_sub['WBAN'].values[0])]
-
-        return self.stations
+        if len(df_sub) == 0:
+            raise ValueError(
+                'the input country, state and station name is not found in isd-history')
+        else:
+            self.stations = [str(df_sub['USAF'].values[0]) +
+                             '-' + str(df_sub['WBAN'].values[0])]
+            return self.stations
 
     def set_stations(self, usaf_wbans):
         """

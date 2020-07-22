@@ -25,8 +25,6 @@ if __name__ == '__main__':
         with open(file_name_input) as json_file:
             args = json.load(json_file)
 
-        # print(args)
-
         # download isd_full
         isd_full = NOAAData(data_type=DataType.isd_full)
         isd_full.set_years_range(
@@ -37,3 +35,5 @@ if __name__ == '__main__':
         # output files
         o = Output(args)
         o.output_files()
+
+        print('success!')

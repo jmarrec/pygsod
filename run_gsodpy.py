@@ -4,6 +4,7 @@ import os
 from gsodpy.output import Output
 from gsodpy.noaadata import NOAAData
 from gsodpy.utils import DataType
+from gsodpy.ish_full import parse_ish_file
 
 if __name__ == '__main__':
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
             start_year=args['start_year'], end_year=args['end_year'])
         isd_full.get_stations_from_user_input(args=args)
         isd_full.get_all_data()
+        parse_ish_file(isd_full.ops_files)
 
         # output files
         o = Output(args)

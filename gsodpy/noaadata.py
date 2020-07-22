@@ -13,7 +13,8 @@ import re
 import progressbar
 
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
-from gsodpy.utils import (is_list_like, ReturnCode, DataType, sanitize_usaf_wban)
+from gsodpy.utils import (is_list_like, ReturnCode,
+                          DataType, sanitize_usaf_wban)
 from gsodpy.isdhistory import ISDHistory
 
 import warnings
@@ -154,6 +155,33 @@ class NOAAData():
                           if not line.startswith('#')]
 
         self.stations = [sanitize_usaf_wban(x) for x in usaf_wbans]
+
+        return self.stations
+
+    def get_stations_from_user_input(self, args):
+        """
+        convert country, state, station name input by user into USAF-WBANs
+
+        Args:
+        -----
+            args: input by user with country, state and station_name info
+
+        Returns:
+        --------
+            stations (list of str): sanitized
+
+        """
+        country = args['country']
+        state = args['state']
+        station_name = args['station_name']
+
+        isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
+        df = pd.read_csv(isd_history_file_name)
+        df_sub = df[(df['CTRY'] == country) & (df['STATE'] == state)
+                    & (df['STATION NAME'] == station_name)]
+
+        self.stations = [str(df_sub['USAF'].values[0]) +
+                         '-' + str(df_sub['WBAN'].values[0])]
 
         return self.stations
 
@@ -368,8 +396,8 @@ class NOAAData():
         if not os.path.exists(local_folder):
             os.makedirs(local_folder)
 
-        remote_path = os.path.join(remote_folder, op_name).replace("\\","/")
-        local_path = os.path.join(local_folder, op_name).replace("\\","/")
+        remote_path = os.path.join(remote_folder, op_name).replace("\\", "/")
+        local_path = os.path.join(local_folder, op_name).replace("\\", "/")
 
         # Sanitize: should have been done already, but better safe... fast
         # anyways

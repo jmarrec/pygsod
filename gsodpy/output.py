@@ -35,8 +35,10 @@ class Output(object):
         df_daily.index = pd.to_datetime(
             df_daily.index)  # reset index to datetime
         # remove unnecessary columns for daily
-        df_daily.drop(
-            columns=['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION'], inplace=True)
+        for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
+            if col in df_daily.columns:
+                df_daily.drop(
+                    columns=col, inplace=True)
 
         df_daily['HDD_F'] = df_daily[
             'TEMP_F'].apply(self.calculate_hdd)
@@ -50,9 +52,11 @@ class Output(object):
            used in output_files()
         """
         df_monthly = df_hourly.groupby(by=df_hourly.index.month).mean()
-        # remove unnecessary columns
-        df_monthly.drop(
-            columns=['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION'], inplace=True)
+        # remove unnecessary columns for daily
+        for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
+            if col in df_monthly.columns:
+                df_daily.drop(
+                    columns=col, inplace=True)
 
         monthly_hdd = []
         monthly_cdd = []
@@ -73,7 +77,7 @@ class Output(object):
 
            csv: hourly, daily, monthly
 
-           json: daily, monthly  
+           json: daily, monthly
 
 
         """

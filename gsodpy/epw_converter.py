@@ -44,7 +44,7 @@ def epw_convert(df, root, file):
 
     epw = EPW()
     epw_file = os.path.join(
-        SUPPORT_DIR, 'USA_NY_New.York-J.F.Kennedy.Intl.AP.744860_TMY3.epw')
+        SUPPORT_DIR, 'EPW-template-file.epw')
     epw.read(epw_file)
 
     for i, wd in enumerate(epw.weatherdata):

@@ -2,26 +2,38 @@
 import json
 import os
 from gsodpy.output import Output
+from gsodpy.noaadata import NOAAData
+from gsodpy.utils import DataType
 
 if __name__ == '__main__':
 
-	folder_input = 'input/'
-	files = os.listdir(folder_input)
+    folder_input = 'input/'
+    files = os.listdir(folder_input)
 
-	list_json_files = []
-	
-	for f in files:
-		fname, ext = os.path.splitext(f)
-		if ext == ".json":
-			list_json_files.append((fname, ext))
+    list_json_files = []
 
-	file_name_input = os.path.join(folder_input,
-		'{}{}'.format(fname, ext))
+    for f in files:
+        fname, ext = os.path.splitext(f)
+        if ext == ".json":
+            list_json_files.append((fname, ext))
 
-	with open(file_name_input) as json_file:
-		args = json.load(json_file)
+    for fname, ext in list_json_files:
 
-	print(args)
+        file_name_input = os.path.join(folder_input,
+                                       '{}{}'.format(fname, ext))
 
-	o = Output(args)
-	o.output_files()
+        with open(file_name_input) as json_file:
+            args = json.load(json_file)
+
+        # print(args)
+
+        # download isd_full
+        isd_full = NOAAData(data_type=DataType.isd_full)
+        isd_full.set_years_range(
+            start_year=args['start_year'], end_year=args['end_year'])
+        isd_full.get_stations_from_user_input(args=args)
+        isd_full.get_all_data()
+
+        # output files
+        o = Output(args)
+        o.output_files()

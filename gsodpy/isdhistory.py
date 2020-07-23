@@ -202,4 +202,5 @@ class ISDHistory():
                                                                     lat, lon),
                                             axis=1)
         # print(self.df.loc[self.df['distance'].argmin()])
-        return self.df['distance'].argmin()
+        d = self.df['distance'].argmin()
+        return self.df.index[d]

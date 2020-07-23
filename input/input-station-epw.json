@@ -1,6 +1,6 @@
 {	
 	"type_of_file": "historical",
-	"type_of_output": "CSV", 
+	"type_of_output": "EPW", 
 	"hdd_threshold": 70, 
 	"cdd_threshold": 80,
 
@@ -9,8 +9,8 @@
 
 	"country": "US",
 	"state": "NY",
-	"station_name": "JOHN F KENNEDY INTERNATIONAL AIRPORT",
+	"station_name": "LA GUARDIA AIRPORT",
 
-	"latitude": 40.639,
-	"longitude": -73.764
+	"latitude": null,
+	"longitude": null
 }

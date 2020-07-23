@@ -1,4 +1,4 @@
-from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
+from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR, RESULT_DIR
 import os
 from pyepw.epw import EPW
 from gsodpy.ish_full import parse_ish_file
@@ -87,7 +87,7 @@ def epw_convert(df, root, file):
             # field atmosphere pressure
             value_pressure = 119999
         elif value_pressure <= 31000:
-        	value_pressure = 31001
+            value_pressure = 31001
 
         wd.atmospheric_station_pressure = value_pressure
 
@@ -96,8 +96,8 @@ def epw_convert(df, root, file):
 
         value_windspeed = df['WIND_SPEED'][i]
         if value_windspeed >= 40:
-        	value_windspeed = 39.9 # value need to be smaller 40.0
-        wd.wind_speed = value_windspeed     
+            value_windspeed = 39.9  # value need to be smaller 40.0
+        wd.wind_speed = value_windspeed
 
         #      Wind Direction
         # ----------------
@@ -110,19 +110,21 @@ def epw_convert(df, root, file):
         wd.relative_humidity = value_rh
 
         #	   Total Sky Cover
-        # ----------------   
+        # ----------------
         value_total_sky_cover = df['TOTAL_SKY_COVER'][i] / 2
-        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth scaling 
+        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
+        # scaling
         wd.total_sky_cover = value_total_sky_cover
 
         #	   Opaque Sky Cover
-        # ----------------   
+        # ----------------
         value_opaque_sky_cover = df['OPAQUE_SKY_COVER'][i] / 2
-        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth scaling 
+        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
+        # scaling
         wd.opaque_sky_cover = value_opaque_sky_cover
 
     epw_file_new = os.path.join(
-        root, file[:-5] + '.epw')
+        RESULT_DIR, file[:-5] + '.epw')
     epw.save(epw_file_new)
 
 

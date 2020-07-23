@@ -4,12 +4,12 @@
 	"hdd_threshold": 70, 
 	"cdd_threshold": 80,
 
-	"start_year": 2014,
-	"end_year": 2014,
+	"start_year": 2012,
+	"end_year": 2012,
 
-	"country": null,
-	"state": null,
-	"station_name": null,
+	"country": "US",
+	"state": "NY",
+	"station_name": "JOHN F KENNEDY INTERNATIONAL AIRPORT",
 
 	"latitude": 40.639,
 	"longitude": -73.764

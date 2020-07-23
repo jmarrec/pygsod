@@ -1,5 +1,5 @@
 from gsodpy.epw_converter import clean_df, epw_convert
-from gsodpy.constants import WEATHER_DIR
+from gsodpy.constants import WEATHER_DIR, RESULT_DIR
 import os
 import pandas as pd
 
@@ -36,7 +36,8 @@ class Output(object):
             df_daily.index)  # reset index to datetime
         # remove unnecessary columns for daily
         # df_daily.drop(
-        #     columns=['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION'], inplace=True)
+        # columns=['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION'],
+        # inplace=True)
         for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
             if col in df_daily.columns:
                 df_daily.drop(
@@ -56,7 +57,8 @@ class Output(object):
         df_monthly = df_hourly.groupby(by=df_hourly.index.month).mean()
         # remove unnecessary columns for daily
         # df_monthly.drop(
-        #     columns=['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION'], inplace=True)
+        # columns=['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION'],
+        # inplace=True)
         for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
             if col in df_monthly.columns:
                 df_monthly.drop(
@@ -94,7 +96,7 @@ class Output(object):
 
                     # hourly
                     hourly_file_name = os.path.join(
-                        root, file[:-5] + '-hourly' + '.csv')
+                        RESULT_DIR, file[:-5] + '-hourly' + '.csv')
                     df.to_csv(hourly_file_name)
                     # df.to_json
 
@@ -107,11 +109,11 @@ class Output(object):
 
                     # daily
                     daily_file_name = os.path.join(
-                        root, file[:-5] + '-daily')
+                        RESULT_DIR, file[:-5] + '-daily')
 
                     # monthly
                     monthly_file_name = os.path.join(
-                        root, file[:-5] + '-monthly')
+                        RESULT_DIR, file[:-5] + '-monthly')
 
                     # epw
                     if self.type_of_output == 'EPW':

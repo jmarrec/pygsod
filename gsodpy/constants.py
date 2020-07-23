@@ -13,3 +13,7 @@ if not os.path.exists(SUPPORT_DIR):
 WEATHER_DIR = os.path.realpath(os.path.join(GSOD_DIR, '../weather_files/'))
 if not os.path.exists(WEATHER_DIR):
     os.makedirs(WEATHER_DIR)
+
+RESULT_DIR = os.path.realpath(os.path.join(GSOD_DIR, '../results/'))
+if not os.path.exists(RESULT_DIR):
+    os.makedirs(RESULT_DIR)

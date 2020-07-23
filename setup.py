@@ -30,10 +30,10 @@ setup(
     description=("A Wrapper to Download data off "
                  "NOAA's Global Summary of the day,"
                  "and load them into pandas"),
-    long_description=LONG_DESCRIPTION, # TODO
+    long_description=LONG_DESCRIPTION,  # TODO
 
     # The project's main homepage.
-    #url='https://github.com/pypa/sampleproject',
+    # url='https://github.com/pypa/sampleproject',
 
     # Author details
     author='Julien Marrec & EffiBEM',
@@ -41,7 +41,7 @@ setup(
     url="www.effibem.com",
 
     # Choose your license
-    license='MIT', # TODO
+    license='MIT',  # TODO
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -86,7 +86,9 @@ setup(
     install_requires=['pandas', 'pathlib',
                       # NOT progressbar, mind the 2!
                       'progressbar2',
-                      'pyepw'],
+                      'pyepw',
+                      'bs4',
+                      'requests'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -94,7 +96,7 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         #'dev': ['check-manifest'],
-        'test': ['coverage','pytest'],
+        'test': ['coverage', 'pytest'],
     },
 
     # If there are data files included in your packages that need to be

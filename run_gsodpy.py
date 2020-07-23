@@ -5,6 +5,7 @@ from gsodpy.output import Output
 from gsodpy.noaadata import NOAAData
 from gsodpy.utils import DataType
 from gsodpy.ish_full import parse_ish_file
+from gsodpy.tmy_download import TMY
 
 if __name__ == '__main__':
 
@@ -26,16 +27,18 @@ if __name__ == '__main__':
         with open(file_name_input) as json_file:
             args = json.load(json_file)
 
-        # download isd_full
-        isd_full = NOAAData(data_type=DataType.isd_full)
-        isd_full.set_years_range(
-            start_year=args['start_year'], end_year=args['end_year'])
-        isd_full.get_stations_from_user_input(args=args)
-        isd_full.get_all_data()
-        parse_ish_file(isd_full.ops_files)
+        if args['type_of_file'] == 'historical':
+        	# download isd_full
+	        isd_full = NOAAData(data_type=DataType.isd_full)
+	        isd_full.set_years_range(
+	            start_year=args['start_year'], end_year=args['end_year'])
+	        isd_full.get_stations_from_user_input(args=args)
+	        isd_full.get_all_data()
+	        parse_ish_file(isd_full.ops_files)
 
-        # output files
-        o = Output(args)
-        o.output_files()
-
-        print('success!')
+	    	# output files
+        	o = Output(args)
+        	o.output_files()
+        elif args['type_of_file'] == 'TMY':
+        	# download weather data from EP+ website
+        	tmy_data = TMY(args['country'], args['state'], args['station_name'])

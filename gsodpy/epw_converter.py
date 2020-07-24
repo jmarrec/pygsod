@@ -39,7 +39,7 @@ def clean_df(df, file):
     return df
 
 
-def epw_convert(df, root, file):
+def epw_convert(df, op_file_name):
     """Convert ish_full into EPW file """
 
     epw = EPW()
@@ -124,7 +124,7 @@ def epw_convert(df, root, file):
         wd.opaque_sky_cover = value_opaque_sky_cover
 
     epw_file_new = os.path.join(
-        RESULT_DIR, file[:-5] + '.epw')
+        RESULT_DIR, op_file_name + '.epw')
     epw.save(epw_file_new)
 
 
@@ -136,4 +136,4 @@ if __name__ == '__main__':
                 df_path = os.path.join(root, file)
                 df = pd.read_excel(df_path, index_col=0)
                 df = clean_df(df, file)
-                epw_convert(df, root, file)
+                epw_convert(df, file)

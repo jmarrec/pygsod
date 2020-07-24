@@ -28,17 +28,20 @@ if __name__ == '__main__':
             args = json.load(json_file)
 
         if args['type_of_file'] == 'historical':
-        	# download isd_full
-	        isd_full = NOAAData(data_type=DataType.isd_full)
-	        isd_full.set_years_range(
-	            start_year=args['start_year'], end_year=args['end_year'])
-	        isd_full.get_stations_from_user_input(args=args)
-	        isd_full.get_all_data()
-	        parse_ish_file(isd_full.ops_files)
+            # download isd_full
+            isd_full = NOAAData(data_type=DataType.isd_full)
+            isd_full.set_years_range(
+                start_year=args['start_year'], end_year=args['end_year'])
+            isd_full.get_stations_from_user_input(args=args)
+            isd_full.get_all_data()
+            parse_ish_file(isd_full.ops_files)
 
-	    	# output files
-        	o = Output(args)
-        	o.output_files()
+            # output files
+            for op_file in isd_full.ops_files:
+                o = Output(op_file, args['type_of_output'], args[
+                           'hdd_threshold'], args['cdd_threshold'])
+                o.output_files()
         elif args['type_of_file'] == 'TMY':
-        	# download weather data from EP+ website
-        	tmy_data = TMY(args['country'], args['state'], args['station_name'])
+            # download weather data from EP+ website
+            tmy_data = TMY(args['country'], args[
+                           'state'], args['station_name'])

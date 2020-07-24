@@ -7,11 +7,12 @@ import pandas as pd
 class Output(object):
     """Class for output weather data into specific type """
 
-    def __init__(self, args):
+    def __init__(self, op_file, type_of_output, hdd_threshold, cdd_threshold):
 
-        self.type_of_output = args['type_of_output']
-        self.hdd_threshold = args['hdd_threshold']
-        self.cdd_threshold = args['cdd_threshold']
+        self.op_file = op_file
+        self.type_of_output = type_of_output
+        self.hdd_threshold = hdd_threshold
+        self.cdd_threshold = cdd_threshold
 
     def calculate_hdd(self, temp):
         """function to calculate hdd"""
@@ -77,7 +78,7 @@ class Output(object):
         return df_monthly
 
     def output_files(self):
-        """output epw, csv or json file for each weather data in the directory.
+        """output epw, csv or json file for each weather data for the op_file.
 
            epw: hourly
 
@@ -87,44 +88,47 @@ class Output(object):
 
 
         """
-        for root, dirs, files in os.walk(WEATHER_DIR + '/isd_full'):
-            for file in files:
-                if file.endswith("xlsx"):
-                    df_path = os.path.join(root, file)
-                    df = pd.read_excel(df_path, index_col=0)
-                    df = clean_df(df, file)
+        # for root, dirs, files in os.walk(WEATHER_DIR + '/isd_full'):
+        #     for file in files:
+        #         if file.endswith("xlsx"):
+        full_path = self.op_file
+        op_file_name = self.op_file.split('/')[-1]
 
-                    # hourly
-                    hourly_file_name = os.path.join(
-                        RESULT_DIR, file[:-5] + '-hourly' + '.csv')
-                    df.to_csv(hourly_file_name)
-                    # df.to_json
+        df_path = '{f}.{ext}'.format(f=full_path, ext='xlsx')
+        df = pd.read_excel(df_path, index_col=0)
+        df = clean_df(df, op_file_name)
 
-                    # daily
-                    df_daily = self.output_daily(df_hourly=df)
-                    # monthly
-                    df_monthly = self.output_monthly(
-                        df_hourly=df, df_daily=df_daily)
-                    # output files
+        # hourly
+        hourly_file_name = os.path.join(
+            RESULT_DIR, op_file_name + '-hourly' + '.csv')
+        df.to_csv(hourly_file_name)
+        # df.to_json
 
-                    # daily
-                    daily_file_name = os.path.join(
-                        RESULT_DIR, file[:-5] + '-daily')
+        # daily
+        df_daily = self.output_daily(df_hourly=df)
+        # monthly
+        df_monthly = self.output_monthly(
+            df_hourly=df, df_daily=df_daily)
+        # output files
 
-                    # monthly
-                    monthly_file_name = os.path.join(
-                        RESULT_DIR, file[:-5] + '-monthly')
+        # daily
+        daily_file_name = os.path.join(
+            RESULT_DIR, op_file_name + '-daily')
 
-                    # epw
-                    if self.type_of_output == 'EPW':
-                        epw_convert(df, root, file)
+        # monthly
+        monthly_file_name = os.path.join(
+            RESULT_DIR, op_file_name + '-monthly')
 
-                    # csv
-                    if self.type_of_output == 'CSV':
-                        df_daily.to_csv(daily_file_name + '.csv')
-                        df_monthly.to_csv(monthly_file_name + '.csv')
+        # epw
+        if self.type_of_output == 'EPW':
+            epw_convert(df, op_file_name)
 
-                    # json
-                    if self.type_of_output == 'JSON':
-                        df_daily.to_json(daily_file_name + '.json')
-                        df_monthly.to_json(monthly_file_name + '.json')
+        # csv
+        if self.type_of_output == 'CSV':
+            df_daily.to_csv(daily_file_name + '.csv')
+            df_monthly.to_csv(monthly_file_name + '.csv')
+
+        # json
+        if self.type_of_output == 'JSON':
+            df_daily.to_json(daily_file_name + '.json')
+            df_monthly.to_json(monthly_file_name + '.json')

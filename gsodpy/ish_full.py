@@ -28,57 +28,62 @@ from gsodpy.utils import (DataType, is_list_like, get_valid_year,
 def parse_rh(data):
     if 'RH1' in data:
         loc = data.find('RH3')
-        rh = int(data[loc+7:loc+10])
+        rh = int(data[loc + 7:loc + 10])
         if rh == 999:
-        	return np.nan # if using 999 therew will be issue in interpolating
+            return np.nan  # if using 999 therew will be issue in interpolating
         else:
-        	return rh
+            return rh
     else:
         return np.nan
 
+
 def parse_total_sky_cover(data):
-	if 'GF1' in data:
-		loc = data.find('GF1')
-		total_sky_cover = int(data[loc+3:loc+5])
-		if total_sky_cover == 99:
-			return np.nan
-		else:
-			return total_sky_cover
-	else:
-		return np.nan
+    if 'GF1' in data:
+        loc = data.find('GF1')
+        total_sky_cover = int(data[loc + 3:loc + 5])
+        if total_sky_cover == 99:
+            return np.nan
+        else:
+            return total_sky_cover
+    else:
+        return np.nan
+
 
 def parse_opaque_sky_cover(data):
-	if 'GF1' in data:
-		loc = data.find('GF1')
-		opaque_sky_cover = int(data[loc+5:loc+7])
-		if opaque_sky_cover == 99:
-			return np.nan
-		else:	
-			return opaque_sky_cover
-	else:
-		return np.nan
+    if 'GF1' in data:
+        loc = data.find('GF1')
+        opaque_sky_cover = int(data[loc + 5:loc + 7])
+        if opaque_sky_cover == 99:
+            return np.nan
+        else:
+            return opaque_sky_cover
+    else:
+        return np.nan
+
 
 def parse_zenith(data):
-	if 'GQ1' in data:
-		loc = data.find('GQ1')
-		zenith_angle = int(data[loc+7:loc+11])
-		if zenith_angle == 9999:
-			return np.nan
-		else:
-			return zenith_angle / 10 # scaling factor = 10
-	else:
-		return np.nan
+    if 'GQ1' in data:
+        loc = data.find('GQ1')
+        zenith_angle = int(data[loc + 7:loc + 11])
+        if zenith_angle == 9999:
+            return np.nan
+        else:
+            return zenith_angle / 10  # scaling factor = 10
+    else:
+        return np.nan
+
 
 def parse_azimuth(data):
-	if 'GQ1' in data:
-		loc = data.find('GQ1')
-		azimuth_angle = int(data[loc+12:loc+16])
-		if azimuth_angle == 9999:
-			return np.nan
-		else:
-			return azimuth_angle / 10 # scaling factor = 10
-	else:
-		return np.nan
+    if 'GQ1' in data:
+        loc = data.find('GQ1')
+        azimuth_angle = int(data[loc + 12:loc + 16])
+        if azimuth_angle == 9999:
+            return np.nan
+        else:
+            return azimuth_angle / 10  # scaling factor = 10
+    else:
+        return np.nan
+
 
 def parse_ish_file(op_path):
     """
@@ -138,8 +143,8 @@ def parse_ish_file(op_path):
                 (98, 99),
                 (99, 104),
                 (65, 69),
-                (60,63),
-                (105,-1)]
+                (60, 63),
+                (105, -1)]
     # Define column names
     names = ['USAF',
              'WBAN',
@@ -196,23 +201,24 @@ def parse_ish_file(op_path):
                            skiprows=1,
                            na_values=na_values, dtypes=dtypes)
 
-        i_op['TEMP_C'] = i_op['TEMP_C'] / 10 # scaling factor: 10
-        i_op['TEMP_F'] = i_op['TEMP_C'] * 1.8 + 32 # calculate C to F
-        i_op['DEWP_C'] = i_op['DEWP_C'] / 10 # scaling factor: 10
-        i_op['SLP_hPa'] = i_op['SLP_hPa'] / 10 # scaling factor: 10
-        i_op['WIND_SPEED'] = i_op['WIND_SPEED'] / 10 # scaling factor: 10
+        i_op['TEMP_C'] = i_op['TEMP_C'] / 10  # scaling factor: 10
+        i_op['TEMP_F'] = i_op['TEMP_C'] * 1.8 + 32  # calculate C to F
+        i_op['DEWP_C'] = i_op['DEWP_C'] / 10  # scaling factor: 10
+        i_op['SLP_hPa'] = i_op['SLP_hPa'] / 10  # scaling factor: 10
+        i_op['WIND_SPEED'] = i_op['WIND_SPEED'] / 10  # scaling factor: 10
 
         i_op['SLP_Pa'] = i_op['SLP_hPa'] * 100
-
 
         # ADDITIONAL DATA SECTION
         i_op['RELATIVE_HUMIDITY_PERCENTAGE'] = i_op['ADD_DATA'].apply(parse_rh)
         i_op['TOTAL_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_total_sky_cover)
-        i_op['OPAQUE_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_opaque_sky_cover)
+        i_op['OPAQUE_SKY_COVER'] = i_op[
+            'ADD_DATA'].apply(parse_opaque_sky_cover)
         i_op['AZIMUTH_ANGLE'] = i_op['ADD_DATA'].apply(parse_azimuth)
         i_op['ZENITH_ANGLE'] = i_op['ADD_DATA'].apply(parse_zenith)
 
-        fname = os.path.join(WEATHER_DIR, p + '.xlsx')
+        fname = os.path.join(p + '.xlsx')
+
         i_op.to_excel(fname)
         all_ops.append(i_op)
     op = pd.concat(all_ops)

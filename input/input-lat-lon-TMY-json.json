@@ -1,0 +1,16 @@
+{	
+	"type_of_file": "TMY",
+	"type_of_output": "JSON", 
+	"hdd_threshold": 70, 
+	"cdd_threshold": 80,
+
+	"start_year": null,
+	"end_year": null,
+
+	"country": "USA",
+	"state": "NY",
+	"station_name": "New York City-Central Park",
+
+	"latitude": null,
+	"longitude": null
+}

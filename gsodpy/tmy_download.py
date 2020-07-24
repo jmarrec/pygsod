@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from pyepw.epw import EPW
 from gsodpy.constants import RESULT_DIR
 
+
 class TMY(object):
     """Provide temperature data for selected location."""
 
@@ -31,7 +32,8 @@ class TMY(object):
         else:
             print('Download weather file from EP+ website.')
             self.url_epw = self.fetch_url()
-            self.filename = os.path.join(RESULT_DIR, self.url_epw.split('/')[-1])
+            self.filename = os.path.join(
+                RESULT_DIR, self.url_epw.split('/')[-1])
             # self.filename = resource_filename(__name__,
             #                                   '/specifications/' +
             #                                   self.url_epw.split('/')[-1])

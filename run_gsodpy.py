@@ -45,3 +45,7 @@ if __name__ == '__main__':
             # download weather data from EP+ website
             tmy_data = TMY(args['country'], args[
                            'state'], args['station_name'])
+
+            o = Output(tmy_data.filename, args['type_of_output'], args[
+                'hdd_threshold'], args['cdd_threshold'])
+            o.output_files_from_epw()

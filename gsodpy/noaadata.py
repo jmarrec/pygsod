@@ -399,7 +399,10 @@ class NOAAData():
         # os.chdir(weatherfolder)
 
         # Construct file names
-        op_name = '{id}-{y}.{e}'.format(id=usaf_wban, y=year, e=self.gz_ext)
+        remote_op_name = '{id}-{y}.{e}'.format(
+            id=usaf_wban, y=year, e=self.gz_ext)
+        local_op_name = '{s}-{y}.{e}'.format(
+            s=df_isd.loc[usaf_wban, 'STATION NAME'], y=year, e=self.gz_ext)
 
         remote_folder = os.path.join(self.ftp_folder, str(year))
         local_folder = os.path.join(self.weather_dir, str(year))
@@ -407,8 +410,8 @@ class NOAAData():
         if not os.path.exists(local_folder):
             os.makedirs(local_folder)
 
-        remote_path = os.path.join(remote_folder, op_name).replace("\\", "/")
-        local_path = os.path.join(local_folder, op_name).replace("\\", "/")
+        remote_path = os.path.join(remote_folder, remote_op_name).replace("\\", "/")
+        local_path = os.path.join(local_folder, local_op_name).replace("\\", "/")
 
         # Sanitize: should have been done already, but better safe... fast
         # anyways

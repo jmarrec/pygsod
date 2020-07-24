@@ -1,9 +1,6 @@
 # Ignore the folder with all the individual downloaded weather files
 weather_files/
 
-# Ignore the support folder
-support/
-
 # =========================
 # eQuest
 # =========================

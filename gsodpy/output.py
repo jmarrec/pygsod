@@ -69,7 +69,7 @@ class Output(object):
 
         monthly_hdd = []
         monthly_cdd = []
-        for month in range(1, 13):
+        for month in range(1, df_hourly.index.month[-1] + 1):
             monthly_hdd.append(
                 df_daily[df_daily.index.month == month]['HDD_F'].sum())
             monthly_cdd.append(

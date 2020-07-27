@@ -89,11 +89,12 @@ class GetOneStation(object):
             self.latitude, self.longitude)
 
         isd_full.get_all_data()
-        parse_ish_file(isd_full.ops_files)
+        parse_ish_file(isd_full)
 
         list_ops_files = isd_full.ops_files
 
         return list_ops_files
+
 
 class Output(object):
     """Class for output weather data into specific type """

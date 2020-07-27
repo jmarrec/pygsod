@@ -85,7 +85,7 @@ def parse_azimuth(data):
         return np.nan
 
 
-def parse_ish_file(op_path):
+def parse_ish_file(isd_full):
     """
     Parses the Weather File downloaded from NOAA's Integrated Surface Data 
     (ISD, formerly Integrated Surface Hourly (ISH))
@@ -94,10 +94,7 @@ def parse_ish_file(op_path):
     Will also convert the IP units to SI units used by E+
     Args:
     ------
-        ish_path (str, or list_like): Path to the weather file, 
-        or a list of path
-        If a list, will parse all the files and concat the result in a single
-        DataFrame
+        isd_full object
     Returns:
     --------
         ish (pd.DataFrame): a DataFrame of the parsed results
@@ -130,6 +127,15 @@ def parse_ish_file(op_path):
     #
     # names = df.Name.tolist()
     # Define the [start,end[ for the fixed-width format
+
+    op_path = isd_full.ops_files
+    years = isd_full.years
+    # If a single path, put it in a list of one-element
+    if not is_list_like(op_path):
+        op_path = [op_path]
+    all_ops = []
+
+    oppath_year = list(zip(op_path, years))
 
     colspecs = [(4, 10),
                 (10, 15),
@@ -189,11 +195,8 @@ def parse_ish_file(op_path):
                  'SNDP_in': 999.9,
                  'WIND_SPEED': 9999,
                  'WIND_DIRECTION': 999}
-    # If a single path, put it in a list of one-element
-    if not is_list_like(op_path):
-        op_path = [op_path]
-    all_ops = []
-    for p in op_path:
+
+    for p, year in oppath_year:
         i_op = pd.read_fwf(p, index_col='Date',
                            parse_dates={
                                'Date': ['YEAR', 'MONTH', 'DAY', 'TIME']},
@@ -216,6 +219,9 @@ def parse_ish_file(op_path):
             'ADD_DATA'].apply(parse_opaque_sky_cover)
         i_op['AZIMUTH_ANGLE'] = i_op['ADD_DATA'].apply(parse_azimuth)
         i_op['ZENITH_ANGLE'] = i_op['ADD_DATA'].apply(parse_zenith)
+
+        # filter the only data for the year we need
+        i_op = i_op[i_op.index.year == year]
 
         fname = os.path.join(p + '.xlsx')
 

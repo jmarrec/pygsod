@@ -33,13 +33,33 @@ class GetOneStation(object):
 
     def run(self):
 
-        list_files = get_data()
+        list_files = self.get_data()
 
         # output files
         for file in list_files:
             o = Output(file, self.type_output, self.hdd_threshold,
                        self.cdd_threshold)
             o.output_files()
+
+    def get_one_dataframe(self):
+
+        list_files = self.get_data()
+
+        df_hourly = pd.DataFrame()
+        df_daily = pd.DataFrame()
+        df_monthly = pd.DataFrame()
+        for file in list_files:
+            o = Output(file, self.type_output, self.hdd_threshold,
+                       self.cdd_threshold)
+            df_h, df_d, df_m = o.create_dataframe()
+
+            df_hourly = pd.concat([df_hourly, df_h])
+            df_daily = pd.concat([df_daily, df_d])
+            df_monthly = pd.concat([df_monthly, df_m])
+
+        self.df_hourly = df_hourly
+        self.df_daily = df_daily
+        self.df_monthly = df_monthly
 
     def get_data(self):
         if self.type_of_file == 'historical':
@@ -49,7 +69,7 @@ class GetOneStation(object):
         elif self.type_of_file == 'TMY':
             # download weather data from EP+ website
             tmy_data = TMY(self.country, self.state, self.station_name)
-            list_files = [tmy_data.fname_xlsx]
+            list_files = [tmy_data.fname]
 
         else:
             raise ValueError("The type of file is not correct, it should be"
@@ -74,27 +94,6 @@ class GetOneStation(object):
         list_ops_files = isd_full.ops_files
 
         return list_ops_files
-
-    def get_one_dataframe(self):
-
-        list_files = get_data()
-
-        df_hourly = pd.DataFrame()
-        df_daily = pd.DataFrame()
-        df_monthly = pd.DataFrame()
-        for file in list_files:
-            o = Output(file, self.type_output, self.hdd_threshold,
-                       self.cdd_threshold)
-            df_h, df_d, df_m = o.create_dataframe()
-
-            df_hourly = pd.concat([df_hourly, df_h])
-            df_daily = pd.concat([df_daily, df_d])
-            df_monthly = pd.concat([df_monthly, df_m])
-
-        self.df_hourly = df_hourly
-        self.df_daily = df_daily
-        self.df_monthly = df_monthly
-
 
 class Output(object):
     """Class for output weather data into specific type """
@@ -203,7 +202,7 @@ class Output(object):
         # op_file_name = self.file.split('/')[-1]
 
         df = self.get_hourly_data()
-        df.to_csv(hourly_file_name + '.csv')
+        df.to_csv(self.hourly_file_name + '.csv')
 
         # epw
         if self.type_of_output == 'EPW':

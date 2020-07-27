@@ -1,6 +1,8 @@
 # from pkg_resources import resource_filename
 import os
+import pandas as pd
 import requests
+import datetime
 from bs4 import BeautifulSoup
 from pyepw.epw import EPW
 from gsodpy.constants import RESULT_DIR
@@ -37,7 +39,8 @@ class TMY(object):
         self.create_dataframe()
 
     def _file_name(self, fname):
-        fname = os.path.splitext(fname_epw)
+        print(os.path.splitext(fname))
+        fname = os.path.splitext(fname)[0]
         self.fname = os.path.join(RESULT_DIR, fname)
 
         self.fname_epw = self.fname + '.epw'
@@ -99,7 +102,7 @@ class TMY(object):
             # fetch the zipfile
             data = requests.get(self.url_epw).content
             with open(self.fname_epw, 'wb') as f:
-                print("Saving file to {}".format(self.filename))
+                print("Saving file to {}".format(self.fname_epw))
                 f.write(data)
 
     def create_dataframe(self):

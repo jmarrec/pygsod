@@ -183,7 +183,7 @@ class Output(object):
         # df_monthly['HDD_F'] = monthly_hdd
         # df_monthly['CDD_F'] = monthly_cdd
 
-        df_hdd_cdd = df_daily.groupby(pd.Grouper(freq='1M')).mean()[[
+        df_hdd_cdd = df_daily.groupby(pd.Grouper(freq='1M')).sum()[[
             'HDD_F', 'CDD_F']]
         df_monthly = df_hdd_cdd.merge(df_monthly, how='left',
                                       right_index=True, left_index=True)

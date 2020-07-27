@@ -1,11 +1,11 @@
 """Module to launch in the docker."""
 import json
 import os
-from gsodpy.output import Output
-from gsodpy.noaadata import NOAAData
-from gsodpy.utils import DataType
-from gsodpy.ish_full import parse_ish_file
-from gsodpy.tmy_download import TMY
+from gsodpy.output import GetOneStation
+# from gsodpy.noaadata import NOAAData
+# from gsodpy.utils import DataType
+# from gsodpy.ish_full import parse_ish_file
+# from gsodpy.tmy_download import TMY
 
 if __name__ == '__main__':
 
@@ -27,25 +27,28 @@ if __name__ == '__main__':
         with open(file_name_input) as json_file:
             args = json.load(json_file)
 
-        if args['type_of_file'] == 'historical':
-            # download isd_full
-            isd_full = NOAAData(data_type=DataType.isd_full)
-            isd_full.set_years_range(
-                start_year=args['start_year'], end_year=args['end_year'])
-            isd_full.get_stations_from_user_input(args=args)
-            isd_full.get_all_data()
-            parse_ish_file(isd_full.ops_files)
+        station = GetOneStation(args)
+        station.run()
 
-            # output files
-            for op_file in isd_full.ops_files:
-                o = Output(op_file, args['type_of_output'], args[
-                           'hdd_threshold'], args['cdd_threshold'])
-                o.output_files()
-        elif args['type_of_file'] == 'TMY':
-            # download weather data from EP+ website
-            tmy_data = TMY(args['country'], args[
-                           'state'], args['station_name'])
-
-            o = Output(tmy_data.filename, args['type_of_output'], args[
-                'hdd_threshold'], args['cdd_threshold'])
-            o.output_files_from_epw()
+        # if args['type_of_file'] == 'historical':
+        #     # download isd_full
+        #     isd_full = NOAAData(data_type=DataType.isd_full)
+        #     isd_full.set_years_range(
+        #         start_year=args['start_year'], end_year=args['end_year'])
+        #     isd_full.get_stations_from_user_input(args=args)
+        #     isd_full.get_all_data()
+        #     parse_ish_file(isd_full.ops_files)
+        #
+        #     # output files
+        #     for op_file in isd_full.ops_files:
+        #         o = Output(op_file, args['type_of_output'], args[
+        #                    'hdd_threshold'], args['cdd_threshold'])
+        #         o.output_files()
+        # elif args['type_of_file'] == 'TMY':
+        #     # download weather data from EP+ website
+        #     tmy_data = TMY(args['country'], args[
+        #                    'state'], args['station_name'])
+        #
+        #     o = Output(tmy_data.filename, args['type_of_output'], args[
+        #         'hdd_threshold'], args['cdd_threshold'])
+        #     o.output_files_from_epw()

@@ -4,8 +4,8 @@
 	"hdd_threshold": 70, 
 	"cdd_threshold": 80,
 
-	"start_year": 2012,
-	"end_year": 2012,
+	"start_year": 2020,
+	"end_year": 2020,
 
 	"country": "US",
 	"state": "NY",

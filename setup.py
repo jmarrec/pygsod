@@ -88,7 +88,8 @@ setup(
                       'progressbar2',
                       'pyepw',
                       'bs4',
-                      'requests'],
+                      'requests',
+                      'datetime'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

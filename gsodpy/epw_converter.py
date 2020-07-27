@@ -19,8 +19,10 @@ def clean_df(df, file):
     df = df.groupby(pd.Grouper(freq='1H')).mean()
     print("length of data after groupby hour", len(df))
 
-    start_date = '{}-01-01 00:00:00'.format(df.index[0].year)
-    end_date = '{}-12-31 23:00:00'.format(df.index[0].year)
+    # start_date = '{}-01-01 00:00:00'.format(df.index[0].year)
+    # end_date = '{}-12-31 23:00:00'.format(df.index[0].year)
+    start_date = df.index[0]
+    end_date = df.index[-1]
     date_range = pd.date_range(start_date, end_date, freq='1H')
 
     missing_hours = date_range[~date_range.isin(df.index)]

@@ -158,7 +158,8 @@ class NOAAData():
 
         return self.stations
 
-    def get_stations_from_user_input(self, args):
+    def get_stations_from_user_input(self, country, state, station_name,
+                                     latitude, longitude):
         """
         convert country, state, station name input by user into USAF-WBANs
 
@@ -174,12 +175,12 @@ class NOAAData():
         isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
         df = pd.read_csv(isd_history_file_name)
 
-        country = args['country']
-        state = args['state']
-        station_name = args['station_name']
-
-        latitude = args['latitude']
-        longitude = args['longitude']
+        # country = args['country']
+        # state = args['state']
+        # station_name = args['station_name']
+        #
+        # latitude = args['latitude']
+        # longitude = args['longitude']
 
         if country and state and station_name:
             df_sub = df[(df['CTRY'] == country) & (df['STATE'] == state)

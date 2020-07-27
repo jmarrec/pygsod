@@ -1,6 +1,8 @@
 # from pkg_resources import resource_filename
 import os
+import pandas as pd
 import requests
+import datetime
 from bs4 import BeautifulSoup
 from pyepw.epw import EPW
 from gsodpy.constants import RESULT_DIR
@@ -19,34 +21,30 @@ class TMY(object):
         self.country = country
         self.state = state
         self.temperature_file = temperature_file
-        # self.start_date = start_date
 
-        exist_file_name = self.check_exist()
-        if exist_file_name:
-            print("file already exist!")
-            self.filename = os.path.join(RESULT_DIR, exist_file_name)
-            # self.filename = resource_filename(__name__,
-            #                                   '/specifications/' +
-            #                                   exist_file_name)
+        file_exist, fname = self.check_exist()
+        if file_exist:
+            print("File already exist!")
+            self._file_name(fname)
 
         else:
             print('Download weather file from EP+ website.')
             self.url_epw = self.fetch_url()
-            self.filename = os.path.join(
-                RESULT_DIR, self.url_epw.split('/')[-1])
-            # self.filename = resource_filename(__name__,
-            #                                   '/specifications/' +
-            #                                   self.url_epw.split('/')[-1])
+
+            fname = self.url_epw.split('/')[-1]
+            self._file_name(fname)
+
             self.download_data()
 
-        # self.fetch_temperature_data(file_name=self.filename)
+        self.create_dataframe()
 
-        # Convert the list to a Series
-        # self.data = from_fixed_yearly_load_to_actual_load(
-        #     self.start_date, self.data)
+    def _file_name(self, fname):
+        print(os.path.splitext(fname))
+        fname = os.path.splitext(fname)[0]
+        self.fname = os.path.join(RESULT_DIR, fname)
 
-        # Convert to Fahrenheit
-        # self.data = self.data * 1.8 + 32
+        self.fname_epw = self.fname + '.epw'
+        self.fname_xlsx = self.fname + '.xlsx'
 
     def fetch_url(self):
         """
@@ -99,21 +97,72 @@ class TMY(object):
 
     def download_data(self):
         """Download epw weather file from website."""
-        if os.path.isfile(self.filename):  # we already have this file
-            pass
-
-        else:
+        # If we don't have the file
+        if not os.path.isfile(self.fname_epw):
             # fetch the zipfile
             data = requests.get(self.url_epw).content
-            with open(self.filename, 'wb') as f:
-                print("Saving file to {}".format(self.filename))
+            with open(self.fname_epw, 'wb') as f:
+                print("Saving file to {}".format(self.fname_epw))
                 f.write(data)
 
-    def fetch_temperature_data(self, file_name):
+    def create_dataframe(self):
         epw = EPW()
-        epw.read(file_name)
-        self.data = [
-            i.dry_bulb_temperature for i in epw.weatherdata]
+        epw.read(self.fname_epw)
+
+        dic = {'year': [i.year for i in epw.weatherdata],
+               'month': [i.month for i in epw.weatherdata],
+               'day': [i.day for i in epw.weatherdata],
+               'hour': [i.hour for i in epw.weatherdata],
+               'minute': [i.minute for i in epw.weatherdata],
+               'aerosol_optical_depth': [i.aerosol_optical_depth for i in epw.weatherdata],
+               'albedo': [i.albedo for i in epw.weatherdata],
+               'atmospheric_station_pressure': [i.atmospheric_station_pressure for i in epw.weatherdata],
+               'ceiling_height': [i.ceiling_height for i in epw.weatherdata],
+               'data_source_and_uncertainty_flags': [i.data_source_and_uncertainty_flags for i in epw.weatherdata],
+               'days_since_last_snowfall': [i.days_since_last_snowfall for i in epw.weatherdata],
+               'dew_point_temperature': [i.dew_point_temperature for i in epw.weatherdata],
+               'diffuse_horizontal_illuminance': [i.diffuse_horizontal_illuminance for i in epw.weatherdata],
+               'diffuse_horizontal_radiation': [i.diffuse_horizontal_radiation for i in epw.weatherdata],
+               'direct_normal_illuminance': [i.direct_normal_illuminance for i in epw.weatherdata],
+               'direct_normal_radiation': [i.direct_normal_radiation for i in epw.weatherdata],
+               'dry_bulb_temperature': [i.dry_bulb_temperature for i in epw.weatherdata],
+               'extraterrestrial_direct_normal_radiation': [i.extraterrestrial_direct_normal_radiation for i in epw.weatherdata],
+               'extraterrestrial_horizontal_radiation': [i.extraterrestrial_horizontal_radiation for i in epw.weatherdata],
+               'field_count': [i.field_count for i in epw.weatherdata],
+               'global_horizontal_illuminance': [i.global_horizontal_illuminance for i in epw.weatherdata],
+               'global_horizontal_radiation': [i.global_horizontal_radiation for i in epw.weatherdata],
+               'horizontal_infrared_radiation_intensity': [i.horizontal_infrared_radiation_intensity for i in epw.weatherdata],
+               'liquid_precipitation_depth': [i.liquid_precipitation_depth for i in epw.weatherdata],
+               'liquid_precipitation_quantity': [i.liquid_precipitation_quantity for i in epw.weatherdata],
+               'opaque_sky_cover': [i.opaque_sky_cover for i in epw.weatherdata],
+               'precipitable_water': [i.precipitable_water for i in epw.weatherdata],
+               'present_weather_codes': [i.present_weather_codes for i in epw.weatherdata],
+               'present_weather_observation': [i.present_weather_observation for i in epw.weatherdata],
+               'relative_humidity': [i.relative_humidity for i in epw.weatherdata],
+               'snow_depth': [i.snow_depth for i in epw.weatherdata],
+               'total_sky_cover': [i.total_sky_cover for i in epw.weatherdata],
+               'visibility': [i.visibility for i in epw.weatherdata],
+               'wind_direction': [i.wind_direction for i in epw.weatherdata],
+               'wind_speed': [i.wind_speed for i in epw.weatherdata],
+               'wind_speed': [i.wind_speed for i in epw.weatherdata],
+               'zenith_luminance': [i.zenith_luminance for i in epw.weatherdata]
+               }
+
+        df_hourly = pd.DataFrame(dic)
+
+        index = pd.date_range(freq='1H',
+                              start=datetime.datetime(
+                                  df_hourly['year'][0], df_hourly['month'][0],
+                                  df_hourly['day'][0], df_hourly['hour'][0] - 1),
+                              end=datetime.datetime(
+                                  df_hourly['year'][0], df_hourly[
+                                      'month'][8759],
+                                  df_hourly['day'][8759], df_hourly['hour'][8759] - 1))
+        df_hourly = df_hourly.set_index(index)
+        df_hourly['TEMP_F'] = df_hourly['dry_bulb_temperature'] * 1.8 + 32
+
+        df_hourly.to_excel(self.fname_xlsx)
+        self.df_hourly = df_hourly
 
     def slash_join(self, *args):
         return "/".join(arg.strip("/") for arg in args)
@@ -142,12 +191,18 @@ class TMY(object):
             return url_city
 
     def check_exist(self):
+
+        file_exist = False
+        fname = None
+
         f = RESULT_DIR
-        # f = resource_filename(__name__, "/specifications/")
         for file_name in os.listdir(f):
             if file_name.endswith(".epw"):
                 _temmp_file = self.temperature_file.replace(" ", ".")
                 if ((self.country in file_name) and
                     (self.state in file_name) and
                         (_temmp_file in file_name)):
-                    return file_name
+
+                    file_exist = True
+                    fname = file_name
+        return file_exist, fname

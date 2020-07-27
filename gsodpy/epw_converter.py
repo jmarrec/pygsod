@@ -73,7 +73,9 @@ def epw_convert(df, op_file_name):
         value_dewp = df['DEWP_C'][i]
 
         if value_dewp >= 70:
-            value_dewp = 69  # condition of EPW package, value need to be smaller 70.0 for field dew_point_temperature
+            # condition of EPW package, value need to be smaller 70.0
+            # for field dew_point_temperature
+            value_dewp = 69
 
         elif value_dewp <= -70:
             value_dewp = -69

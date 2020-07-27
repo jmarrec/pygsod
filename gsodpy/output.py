@@ -33,22 +33,22 @@ class GetOneStation(object):
 
     def run(self):
 
-        list_files = self.get_data()
+        self.list_files = self.get_data()
 
         # output files
-        for file in list_files:
+        for file in self.list_files:
             o = Output(file, self.type_output, self.hdd_threshold,
                        self.cdd_threshold)
             o.output_files()
 
     def get_one_dataframe(self):
 
-        list_files = self.get_data()
+        self.list_files = self.get_data()
 
         df_hourly = pd.DataFrame()
         df_daily = pd.DataFrame()
         df_monthly = pd.DataFrame()
-        for file in list_files:
+        for file in self.list_files:
             o = Output(file, self.type_output, self.hdd_threshold,
                        self.cdd_threshold)
             df_h, df_d, df_m = o.create_dataframe()
@@ -166,22 +166,27 @@ class Output(object):
         """output monthly data
            used in output_files()
         """
-        df_monthly = df_hourly.groupby(by=df_hourly.index.month).mean()
+        df_monthly = df_hourly.groupby(pd.Grouper(freq='1M')).mean()
 
         # remove unnecessary columns for daily
         for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
             if col in df_monthly.columns:
                 df_monthly.drop(columns=[col], inplace=True)
 
-        monthly_hdd = []
-        monthly_cdd = []
-        for month in range(1, df_hourly.index.month[-1] + 1):
-            monthly_hdd.append(
-                df_daily[df_daily.index.month == month]['HDD_F'].sum())
-            monthly_cdd.append(
-                df_daily[df_daily.index.month == month]['CDD_F'].sum())
-        df_monthly['HDD_F'] = monthly_hdd
-        df_monthly['CDD_F'] = monthly_cdd
+        # monthly_hdd = []
+        # monthly_cdd = []
+        # for month in range(1, df_hourly.index.month[-1] + 1):
+        #     monthly_hdd.append(
+        #         df_daily[df_daily.index.month == month]['HDD_F'].sum())
+        #     monthly_cdd.append(
+        #         df_daily[df_daily.index.month == month]['CDD_F'].sum())
+        # df_monthly['HDD_F'] = monthly_hdd
+        # df_monthly['CDD_F'] = monthly_cdd
+
+        df_hdd_cdd = df_daily.groupby(pd.Grouper(freq='1M')).mean()[[
+            'HDD_F', 'CDD_F']]
+        df_monthly = df_hdd_cdd.merge(df_monthly, how='left',
+                                      right_index=True, left_index=True)
 
         return df_monthly
 
@@ -226,8 +231,10 @@ class Output(object):
                 df_monthly.to_json(self.monthly_file_name + '.json')
 
     def create_dataframe(self):
-        df, hourly_file_name = self.get_hourly_data()
+        df = self.get_hourly_data()
+        self.df = df
         df_daily = self.output_daily(df_hourly=df)
+        self.df_daily = df_daily
         df_monthly = self.output_monthly(df_hourly=df, df_daily=df_daily)
 
         return df, df_daily, df_monthly

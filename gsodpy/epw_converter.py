@@ -4,6 +4,7 @@ from pyepw.epw import EPW
 from gsodpy.ish_full import parse_ish_file
 import pandas as pd
 import numpy as np
+import datetime
 
 
 def clean_df(df, file):
@@ -19,10 +20,17 @@ def clean_df(df, file):
     df = df.groupby(pd.Grouper(freq='1H')).mean()
     print("length of data after groupby hour", len(df))
 
-    # start_date = '{}-01-01 00:00:00'.format(df.index[0].year)
-    # end_date = '{}-12-31 23:00:00'.format(df.index[0].year)
-    start_date = df.index[0]
-    end_date = df.index[-1]
+    current_year = datetime.datetime.now().year
+
+    if df.index[0].year == current_year:
+        start_date = df.index[0]
+        end_date = df.index[-1]
+    else:
+        # to include 8760 hrs data if the year is not current data
+        # otherwise it will missing some hrs because of the raw data
+        start_date = '{}-01-01 00:00:00'.format(df.index[0].year)
+        end_date = '{}-12-31 23:00:00'.format(df.index[0].year)
+
     date_range = pd.date_range(start_date, end_date, freq='1H')
 
     missing_hours = date_range[~date_range.isin(df.index)]

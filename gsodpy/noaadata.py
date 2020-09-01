@@ -441,7 +441,7 @@ class NOAAData():
 
             except Exception as err:
                 return_code = ReturnCode.missing
-                ferror.write(op_name + " doesn't exist\r\n")
+                ferror.write(remote_op_name + " doesn't exist\r\n")
                 ferror.write("  {}".format(err))
 
         else:

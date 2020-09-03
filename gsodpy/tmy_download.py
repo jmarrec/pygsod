@@ -63,12 +63,13 @@ class TMY(object):
         for i in soup.find_all(
                 "a", {"class": "btn btn-default left-justify blue-btn"}):
             text = i.text.lower()
-            if (site in text) and (('iwec' in text ) or ('tmy'in text) or ('rmy' in text)):
+            if (site in text) and (('iwec' in text) or ('tmy'in text) or ('rmy' in text)):
                 # url_city = 'https://energyplus.net/{}'.format(i['href'])
                 print(i['href'])
                 print(i['href'].split('/'))
                 b, w, r, c, n = i['href'].split('/')
-                url_city = 'https://energyplus.net/{}/{}/{}//{}'.format(w, r, c, n)
+                url_city = 'https://energyplus.net/{}/{}/{}//{}'.format(
+                    w, r, c, n)
 
         if len(url_city) == 0:
             print("This site is not working: {}".format(site))
@@ -104,6 +105,20 @@ class TMY(object):
                          'NLD', 'NOR', 'POL', 'PRT', 'ROU', 'RUS', 'SRB',
                          'SVK', 'SVN', 'SWE', 'SYR', 'TUR', 'UKR']:
             region = 'europe_wmo_region_6'
+        elif country in ['AUS', 'BRN', 'FJI', 'GUM', 'MHL', 'MYS', 'NZL',
+                         'PHL', 'PLW', 'SGP', 'UMI']:
+            region = 'southwest_pacific_wmo_region_5'
+        elif country in ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'PER',
+                         'PRY', 'URY', 'VEN']:
+            region = 'south_america_wmo_region_3'
+        elif country in ['ARE', 'BGD', 'CHN', 'IND', 'IRN', 'JPN', 'KAZ',
+                         'KOR', 'KWT', 'LKA', 'MAC', 'MDV', 'MNG', 'NPL',
+                         'PAK', 'PRK', 'RUS', 'SAU', 'THA', 'TWN', 'UZB',
+                         'VNM']:
+            region = 'asia_wmo_region_2'
+        elif country in ['DZA', 'EGY', 'ETH', 'GHA', 'KEN', 'LBY', 'MAR',
+                         'MDG', 'SEN', 'TUN', 'ZAF', 'ZWE']:
+            region = 'africa_wmo_region_1'
 
         elif country == 'Not In List':
             region = 'north_and_central_america_wmo_region_4'
@@ -197,7 +212,7 @@ class TMY(object):
                                   2019,
                                   df_hourly['month'].iloc[-1],
                                   df_hourly['day'].iloc[-1],
-                                  df_hourly['hour'].iloc[-1]-1))
+                                  df_hourly['hour'].iloc[-1] - 1))
         df_hourly = df_hourly.set_index(index)
         df_hourly['TEMP_F'] = df_hourly['dry_bulb_temperature'] * 1.8 + 32
 

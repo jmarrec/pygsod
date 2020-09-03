@@ -36,6 +36,13 @@ class TMY(object):
 
             self.download_data()
 
+        # # self.url_epw = self.fetch_url() #
+        # self.url_epw = self.fetch_url_2(temperature_file)
+        # fname = self.url_epw.split('/')[-1]
+        # self._file_name(fname)
+
+        self.download_data()
+
         self.create_dataframe()
 
     def _file_name(self, fname):
@@ -45,6 +52,36 @@ class TMY(object):
 
         self.fname_epw = self.fname + '.epw'
         self.fname_xlsx = self.fname + '.xlsx'
+
+    def fetch_url_2(self, site):
+        url = 'https://energyplus.net/weather-search/'
+
+        result = requests.get(url + site).content
+        soup = BeautifulSoup(result, "html.parser")
+
+        url_city = ''
+        for i in soup.find_all(
+                "a", {"class": "btn btn-default left-justify blue-btn"}):
+            text = i.text.lower()
+            if (site in text) and (('iwec' in text ) or ('tmy'in text) or ('rmy' in text)):
+                # url_city = 'https://energyplus.net/{}'.format(i['href'])
+                print(i['href'])
+                print(i['href'].split('/'))
+                b, w, r, c, n = i['href'].split('/')
+                url_city = 'https://energyplus.net/{}/{}/{}//{}'.format(w, r, c, n)
+
+        if len(url_city) == 0:
+            print("This site is not working: {}".format(site))
+
+        print('city', url_city)
+        soup = BeautifulSoup(requests.get(url_city).content, "html.parser")
+        for i in soup.find_all('a'):
+            if 'epw' in i.text:
+                url_epw = 'https://energyplus.net/{}'.format(i['href'])
+
+        print('epw', url_epw)
+
+        return url_city
 
     def fetch_url(self):
         """
@@ -72,7 +109,7 @@ class TMY(object):
             country = 'USA'
             # default USA
         else:
-            print('Your provided country is not applicable.')
+            raise ValueError('Your provided country is not applicable.')
         ###################################
         # add other region in the future
         ###################################
@@ -86,13 +123,14 @@ class TMY(object):
         url_state = self.slash_join(prefix, region, country, state)
         url_city = self.get_url_city(
             region, country, url_state, temperature_file)
-
+        print('city', url_city)
         # fetch epw file
         soup = BeautifulSoup(requests.get(url_city).content, "html.parser")
         for i in soup.find_all('a'):
             if 'epw' in i.text:
                 url_epw = 'https://energyplus.net/{}'.format(i['href'])
 
+        print('epw', url_epw)
         return url_epw
 
     def download_data(self):
@@ -152,12 +190,13 @@ class TMY(object):
 
         index = pd.date_range(freq='1H',
                               start=datetime.datetime(
-                                  df_hourly['year'][0], df_hourly['month'][0],
+                                  2019, df_hourly['month'][0],
                                   df_hourly['day'][0], df_hourly['hour'][0] - 1),
                               end=datetime.datetime(
-                                  df_hourly['year'][0], df_hourly[
-                                      'month'][8759],
-                                  df_hourly['day'][8759], df_hourly['hour'][8759] - 1))
+                                  2019,
+                                  df_hourly['month'].iloc[-1],
+                                  df_hourly['day'].iloc[-1],
+                                  df_hourly['hour'].iloc[-1]-1))
         df_hourly = df_hourly.set_index(index)
         df_hourly['TEMP_F'] = df_hourly['dry_bulb_temperature'] * 1.8 + 32
 

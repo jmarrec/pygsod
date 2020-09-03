@@ -87,9 +87,9 @@ def parse_azimuth(data):
 
 def parse_ish_file(isd_full):
     """
-    Parses the Weather File downloaded from NOAA's Integrated Surface Data 
+    Parses the Weather File downloaded from NOAA's Integrated Surface Data
     (ISD, formerly Integrated Surface Hourly (ISH))
-    This file with no extension is a fixed-width file, which format 
+    This file with no extension is a fixed-width file, which format
     is specified in '/pub/data/noaa/ish-format-document.pdf'
     Will also convert the IP units to SI units used by E+
     Args:
@@ -227,11 +227,15 @@ def parse_ish_file(isd_full):
 
         i_op.to_excel(fname)
         all_ops.append(i_op)
-    op = pd.concat(all_ops)
-    # Format USAF and WBAN as fixed-length numbers (strings)
-    op.USAF = op.USAF.map(str).str.zfill(6)
-    op.WBAN = op.WBAN.map(str).str.zfill(5)
-    op['StationID'] = op.USAF + "-" + op.WBAN
+
+    if len(all_ops) > 0:
+        op = pd.concat(all_ops)
+        # Format USAF and WBAN as fixed-length numbers (strings)
+        op.USAF = op.USAF.map(str).str.zfill(6)
+        op.WBAN = op.WBAN.map(str).str.zfill(5)
+        op['StationID'] = op.USAF + "-" + op.WBAN
+    else:
+        op = pd.DataFrame()
 
     # Convert from IP units to SI (used by E+)
 

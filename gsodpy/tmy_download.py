@@ -67,6 +67,18 @@ class TMY(object):
                          'NLD', 'NOR', 'POL', 'PRT', 'ROU', 'RUS', 'SRB',
                          'SVK', 'SVN', 'SWE', 'SYR', 'TUR', 'UKR']:
             region = 'europe_wmo_region_6'
+        elif country in ['AUS', 'BRN', 'FJI', 'GUM', 'MHL', 'MYS', 'NZL',
+                         'PHL', 'PLW', 'SGP', 'UMI']:
+            region = 'southwest_pacific_wmo_region_5'
+        elif country in ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'PER',
+                         'PRY', 'URY', 'VEN']:
+            region = 'south_america_wmo_region_3'
+        elif country in ['ARE', 'BGD', 'CHN', 'IND', 'IRN', 'JPN', 'KAZ',
+                         'KOR', 'KWT', 'LKA', 'MAC', 'MDV', 'MNG', 'NPL',
+                         'PAK', 'PRK', 'RUS', 'SAU', 'THA', 'TWN', 'UZB',
+                         'VNM']
+            region = 'asia_wmo_region_2'
+
         elif country == 'Not In List':
             region = 'north_and_central_america_wmo_region_4'
             country = 'USA'

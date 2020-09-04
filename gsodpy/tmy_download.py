@@ -28,7 +28,7 @@ class TMY(object):
             self._file_name(fname)
 
         else:
-            print('Download weather file from EP+ website.')
+            # print('Download weather file from EP+ website.')
             self.url_epw = self.fetch_url()
 
             fname = self.url_epw.split('/')[-1]
@@ -46,7 +46,6 @@ class TMY(object):
         self.create_dataframe()
 
     def _file_name(self, fname):
-        print(os.path.splitext(fname))
         fname = os.path.splitext(fname)[0]
         self.fname = os.path.join(RESULT_DIR, fname)
 
@@ -131,22 +130,23 @@ class TMY(object):
         ###################################
         # get all temperature files under the state
 
-        if state == 'N/A':
+        if state == 'N/A' or pd.isna(state):
             state = ''
         elif state == 'Not In List':
             state = 'NY'
 
+        # print(prefix, region, country, state)
         url_state = self.slash_join(prefix, region, country, state)
         url_city = self.get_url_city(
             region, country, url_state, temperature_file)
-        print('city', url_city)
+        # print('city', url_city)
         # fetch epw file
         soup = BeautifulSoup(requests.get(url_city).content, "html.parser")
         for i in soup.find_all('a'):
             if 'epw' in i.text:
                 url_epw = 'https://energyplus.net/{}'.format(i['href'])
 
-        print('epw', url_epw)
+        # print('epw', url_epw)
         return url_epw
 
     def download_data(self):
@@ -224,12 +224,12 @@ class TMY(object):
 
     def get_url_city(self, region, country, url_state, temperature_file):
         url_city = None
-
+        # print(url_state)
         result = requests.get(url_state).content
         soup = BeautifulSoup(result, "html.parser")
         for i in soup.find_all(
                 "a", {"class": "btn btn-default left-justify blue-btn"}):
-
+            # print(i.text)
             if temperature_file in i.text and 'TMY3' in i.text:
                 url_city = 'https://energyplus.net/{}'.format(i['href'])
 
@@ -254,8 +254,12 @@ class TMY(object):
         for file_name in os.listdir(f):
             if file_name.endswith(".epw"):
                 _temmp_file = self.temperature_file.replace(" ", ".")
+                if self.state is None:
+                    state = ''
+                else:
+                    state = self.state
                 if ((self.country in file_name) and
-                    (self.state in file_name) and
+                    (state in file_name) and
                         (_temmp_file in file_name)):
 
                     file_exist = True

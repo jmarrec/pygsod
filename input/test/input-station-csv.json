@@ -4,12 +4,12 @@
 	"hdd_threshold": 70, 
 	"cdd_threshold": 80,
 
-	"start_year": 2018,
+	"start_year": 2020,
 	"end_year": 2020,
 
 	"country": "US",
-	"state": "PA",
-	"station_name": "PHILADELPHIA INTERNATIONAL AIRPORT",
+	"state": "NY",
+	"station_name": "LA GUARDIA AIRPORT",
 
 	"latitude": null,
 	"longitude": null

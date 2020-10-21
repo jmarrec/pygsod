@@ -85,7 +85,7 @@ def parse_azimuth(data):
         return np.nan
 
 
-def parse_ish_file(isd_full):
+def parse_ish_file(isd_full, create_excel_file=True):
     """
     Parses the Weather File downloaded from NOAA's Integrated Surface Data
     (ISD, formerly Integrated Surface Hourly (ISH))
@@ -95,6 +95,7 @@ def parse_ish_file(isd_full):
     Args:
     ------
         isd_full object
+        create_excel_file (bool): if True, it creates an excel file per year
     Returns:
     --------
         ish (pd.DataFrame): a DataFrame of the parsed results
@@ -223,9 +224,9 @@ def parse_ish_file(isd_full):
         # filter the only data for the year we need
         i_op = i_op[i_op.index.year == year]
 
-        fname = os.path.join(p + '.xlsx')
-
-        i_op.to_excel(fname)
+        if create_excel_file:
+            fname = os.path.join(p + '.xlsx')
+            i_op.to_excel(fname)
         all_ops.append(i_op)
 
     if len(all_ops) > 0:

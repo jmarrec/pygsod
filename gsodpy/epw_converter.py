@@ -6,47 +6,7 @@ import pandas as pd
 import numpy as np
 import datetime
 
-
-def clean_df(df, file):
-    """clean raw data into hourly
-       interpolate for missing data
-    """
-    # print("years downloaded:", set(df.index.year))
-    # year = int(input("enter the year you want to convert:"))
-    # df = df[df.index.year == year]
-    print("start parsing", file)
-    print("length of original dataset:", len(df))
-
-    df = df.groupby(pd.Grouper(freq='1H')).mean()
-    print("length of data after groupby hour", len(df))
-
-    current_year = datetime.datetime.now().year
-
-    if df.index[0].year == current_year:
-        start_date = df.index[0]
-        end_date = df.index[-1]
-    else:
-        # to include 8760 hrs data if the year is not current data
-        # otherwise it will missing some hrs because of the raw data
-        start_date = '{}-01-01 00:00:00'.format(df.index[0].year)
-        end_date = '{}-12-31 23:00:00'.format(df.index[0].year)
-
-    date_range = pd.date_range(start_date, end_date, freq='1H')
-
-    missing_hours = date_range[~date_range.isin(df.index)]
-    for idx in missing_hours:
-        df.loc[idx] = np.NaN  # make the missing rows filled with NaN
-
-    print("length of processed dataset:", len(df), '\n')
-    # sort to make new rows in place, otherwise the Nan rows are at the end
-    df = df.sort_index()
-    df = df.interpolate()  # interpolate values
-
-    # fill with rest NaN with value of previous row
-    df = df.fillna(method='ffill')
-    df = df.fillna(method='backfill')  # fill first row value with second row
-
-    return df
+from gsodpy.utils import clean_df
 
 
 def epw_convert(df, op_file_name):
@@ -147,5 +107,5 @@ if __name__ == '__main__':
             if file.endswith("xlsx"):
                 df_path = os.path.join(root, file)
                 df = pd.read_excel(df_path, index_col=0)
-                df = clean_df(df, file)
+                df = clean_df(df)
                 epw_convert(df, file)

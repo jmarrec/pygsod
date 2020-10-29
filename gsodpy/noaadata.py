@@ -158,8 +158,10 @@ class NOAAData():
 
         return self.stations
 
-    def get_stations_from_user_input(self, country, state, station_name,
-                                     latitude, longitude):
+    def get_stations_from_user_input(self, usaf=None, wban=None,
+                                     country=None, state=None,
+                                     station_name=None,
+                                     latitude=None, longitude=None):
         """
         convert country, state, station name input by user into USAF-WBANs
 
@@ -172,10 +174,11 @@ class NOAAData():
             stations (list of str): sanitized
 
         """
-        isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
-        df = pd.read_csv(isd_history_file_name)
-
         if (country is not None) and (station_name is not None):
+
+            isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
+            df = pd.read_csv(isd_history_file_name)
+
             if state is None:
                 df_sub = df[(df['CTRY'] == country)
                             & (df['STATION NAME'] == station_name)]
@@ -190,10 +193,20 @@ class NOAAData():
                 self.stations = [str(df_sub['USAF'].values[0]) +
                                  '-' + str(df_sub['WBAN'].values[0])]
                 return self.stations
-        else:
+
+        elif (usaf is not None) and (wban is not None):
+            self.stations = [str(usaf) + '-' + str(wban)]
+            return self.stations
+
+        elif (latitude is not None) and (longitude is not None):
             self.stations = [
                 self.isd.closest_weather_station(latitude, longitude)]
             return self.stations
+        else:
+            raise ValueError(
+                "You must provide usaf AND wban, "
+                "OR country AND station_name, "
+                "OR latitude AND longitude.")
 
     def set_stations(self, usaf_wbans):
         """

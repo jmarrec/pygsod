@@ -1,7 +1,7 @@
 """Module to launch in the docker."""
 import json
 import os
-from gsodpy.output import GetOneStation
+from gsodpy.output import Station
 # from gsodpy.noaadata import NOAAData
 # from gsodpy.utils import DataType
 # from gsodpy.ish_full import parse_ish_file
@@ -27,7 +27,7 @@ if __name__ == '__main__':
         with open(file_name_input) as json_file:
             args = json.load(json_file)
 
-        station = GetOneStation(args)
+        station = Station(**args)
         station.run()
 
         # if args['type_of_file'] == 'historical':

@@ -3,9 +3,9 @@ from gsodpy.noaadata import NOAAData
 from gsodpy.utils import DataType, clean_df
 from gsodpy.ish_full import parse_ish_file
 from gsodpy.tmy_download import TMY
-
-from gsodpy.constants import WEATHER_DIR, RESULT_DIR
+from gsodpy.constants import WEATHER_DIR, RESULT_DIR, SUPPORT_DIR
 import os
+
 import pandas as pd
 from pyepw.epw import EPW
 import datetime
@@ -20,7 +20,15 @@ class Station(object):
                  wban=None, latitude=None, longitude=None, start_year=None,
                  end_year=None, db_login=None,
                  hdd_threshold=None, cdd_threshold=None):
+        """
+        Create a weather station and retreive data.
 
+        Args:
+        -----
+            * type_of_file (str): 'TMY' or 'historical'
+            * type_output (str): None or 'CSV' or 'JSON' or 'EPW'.
+                If None, it only adds data to the database.
+        """
         self.type_of_file = type_of_file
         self.type_output = type_output
 
@@ -273,7 +281,7 @@ class Database(object):
 
         elif (self.country is not None) and (self.station_name is not None):
 
-            if state is None:
+            if self.state is None:
                 sql = f'''
                 select id
                 from "altanova-data-warehouse".weather_station
@@ -303,7 +311,6 @@ class Database(object):
                 "OR latitude AND longitude.")
 
         r, columns = self.select_all(sql)
-
         if len(r) == 0:
             self._add_weather_station()
 
@@ -315,21 +322,78 @@ class Database(object):
 
         elif len(r) == 1:
             self.weather_station_id = r[0][0]
-
         else:
             raise ValueError("Multiple weather stations with the same name.")
 
     def _add_weather_station(self):
-        # +++++++++++++++++++++++++++++++++
-        # TO IMPROVE
+        """Add a weather station to the database."""
+        isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
+        df = pd.read_csv(isd_history_file_name)
+
+        if (self.usaf is not None) and (self.wban is not None):
+
+            (usaf, wban, station_name,
+             ctry, state, icao, lat, lon, elev_m, begin, end) = df[
+                (df['USAF'] == self.usaf) &
+                (df['WBAN'] == self.wban)].iloc[0]
+
+        elif (self.country is not None) and (self.station_name is not None):
+
+            if self.state is None:
+                (usaf, wban, station_name,
+                 ctry, state, icao, lat, lon, elev_m, begin, end) = df[
+                    (df['CTRY'] == self.country) &
+                    (df['STATION NAME'] == self.station_name)].sort_values(
+                    'ELEV(M)').iloc[0]
+            else:
+                (usaf, wban, station_name,
+                 ctry, state, icao, lat, lon, elev_m, begin, end) = df[
+                    (df['CTRY'] == self.country) &
+                    (df['STATE'] == self.state) &
+                    (df['STATION NAME'] == self.station_name)].sort_values(
+                    'ELEV(M)').iloc[0]
+
+        elif (self.latitude is not None) and (self.longitude is not None):
+            raise ValueError("Latitude, longitude, not done yet.")
+
+        b = str(begin)
+        y = b[:4]
+        m = b[4:6]
+        d = b[6:]
+        begin_date = '{}-{}-{}'.format(y, m, d)
+
+        e = str(end)
+        y = e[:4]
+        m = e[4:6]
+        d = e[6:]
+        end_date = '{}-{}-{}'.format(y, m, d)
+
         sql = f'''
         insert into "{self.schema}".weather_station(
-        name, country, state, usaf, wban, latitude, longitude)
-        values ('{self.name}', '{self.country}', '{self.state}',
-        '{self.usaf}', '{self.wban}', '{self.latitude}', '{self.longitude}'
+        name, country, usaf, wban, latitude, longitude, elevation_m,
+        begin_date, end_date)
+        values ('{station_name}', '{ctry}',
+                '{usaf}', '{wban}', '{lat}', '{lon}',
+                '{elev_m}', '{begin}', '{end}'
         )
         '''
         self.insert_one(sql)
+
+        if not pd.isna(state):
+            sql = f'''
+            update "{self.schema}".weather_station
+            set state='{state}'
+            where usaf = '{usaf}' and wban = '{wban}'
+            '''
+            self.insert_one(sql)
+
+        if not pd.isna(icao):
+            sql = f'''
+            update "{self.schema}".weather_station
+            set icao='{icao}'
+            where usaf = '{usaf}' and wban = '{wban}'
+            '''
+            self.insert_one(sql)
 
     def get_years_to_update(self):
         years_to_update = []

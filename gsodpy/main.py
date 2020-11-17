@@ -19,7 +19,8 @@ class Station(object):
                  country=None, state=None, station_name=None, usaf=None,
                  wban=None, latitude=None, longitude=None, start_year=None,
                  end_year=None, db_login=None,
-                 hdd_threshold=None, cdd_threshold=None):
+                 hdd_threshold=None, cdd_threshold=None,
+                 update_type=None):
         """
         Create a weather station and retreive data.
 
@@ -64,6 +65,7 @@ class Station(object):
             self.start_year = start_year
             self.end_year = end_year
 
+        self.update_type = update_type
         if db_login is not None:
             self.db = Database(
                 db_login=db_login,
@@ -74,7 +76,8 @@ class Station(object):
                 latitude=self.latitude, longitude=self.longitude,
                 start_year=self.start_year, end_year=self.end_year,
                 hdd_threshold=self.hdd_threshold,
-                cdd_threshold=self.cdd_threshold)
+                cdd_threshold=self.cdd_threshold,
+                update_type=self.update_type)
         else:
             self.db = None
 
@@ -230,7 +233,8 @@ class Database(object):
                  start_year, end_year,
                  country=None, state=None, station_name=None,
                  usaf=None, wban=None,
-                 latitude=None, longitude=None):
+                 latitude=None, longitude=None,
+                 update_type=None):
 
         self.db_login = db_login
         self.db_params()
@@ -252,6 +256,10 @@ class Database(object):
 
         self.start_year = start_year
         self.end_year = end_year
+
+        self.update_type = update_type
+        if update_type is None:
+            self.update_type = 'daily'
 
         self.get_weather_station_id()
 
@@ -316,12 +324,12 @@ class Database(object):
 
             r, columns = self.select_all(sql)
             if len(r) == 1:
-                self.weather_station_id = r[0][0]
+                self.weather_station_id = int(r[0][0])
             else:
                 raise ValueError("Problem to insert station name.")
 
         elif len(r) == 1:
-            self.weather_station_id = r[0][0]
+            self.weather_station_id = int(r[0][0])
         else:
             raise ValueError("Multiple weather stations with the same name.")
 
@@ -405,9 +413,29 @@ class Database(object):
                         list(range(self.start_year, self.end_year+1)))
         else:
 
-            today = datetime.date.today()
+            today = datetime.datetime.today()
             if today.year == self.end_year:
-                if df.index[-1] < today - datetime.timedelta(days=1):
+                if self.update_type == 'hourly':
+                    min_update_time = today
+
+                elif self.update_type == 'daily':
+                    h = today.hour
+                    # End of the previous day
+                    min_update_time = today - datetime.timedelta(hours=h+1)
+
+                elif self.update_type == 'monthly':
+                    d = today.day
+                    h = today.hour
+
+                    # End of the previous month
+                    min_update_time = (
+                        today - datetime.timedelta(days=d)
+                        - datetime.timedelta(hours=h)
+                        + datetime.timedelta(hours=22))
+                else:
+                    raise ValueError("update_type parameter is not correct.")
+
+                if df.index[-1] < min_update_time:
                     years_to_update.append(self.end_year)
 
             # we consider only full years
@@ -436,6 +464,9 @@ class Database(object):
         df = pd.DataFrame(r, columns=columns)
         df.set_index('time', inplace=True)
         df.sort_index(inplace=True)
+        # df = df.astype(float, errors='ignore')
+        # df = df.astype(int, errors='ignore')
+
         return df
 
     def get_index_hourly_data(self):
@@ -453,6 +484,8 @@ class Database(object):
         '''
         r, columns = self.select_all(sql)
         df = pd.DataFrame(r, columns=columns)
+        # df = df.astype(float, errors='ignore')
+        # df = df.astype(int, errors='ignore')
         df.set_index('time', inplace=True)
         return df
 
@@ -574,8 +607,8 @@ class Database(object):
         	ORDER BY gb_month
 
         )
-        select gb_month as datetime, ROUND(cdd, 2) as cdd_f,
-        ROUND(hdd, 2) as hdd_f,
+        select gb_month as datetime, ROUND(cdd, 2) as cdd_65_f,
+        ROUND(hdd, 2) as hdd_65_f,
         ROUND(air_temperature_c, 2) as air_temperature_c,
         ROUND(air_temperature_f, 2) as air_temperature_f,
         ROUND(dewp_c, 2) as dewp_c
@@ -585,10 +618,14 @@ class Database(object):
         r, columns = self.select_all(sql_daily_table)
         df_daily = pd.DataFrame(r, columns=columns)
         df_daily.set_index('datetime', inplace=True)
+        # df_daily = df_daily.astype(float, errors='ignore')
+        # df_daily = df_daily.astype(int, errors='ignore')
 
         r, columns = self.select_all(sql_monthly_table)
         df_monthly = pd.DataFrame(r, columns=columns)
         df_monthly.set_index('datetime', inplace=True)
+        # df_monthly = df_monthly.astype(float, errors='ignore')
+        # df_monthly = df_monthly.astype(int, errors='ignore')
 
         return df_daily, df_monthly
 

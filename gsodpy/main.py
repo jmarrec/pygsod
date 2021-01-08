@@ -12,6 +12,10 @@ import datetime
 
 import psycopg2
 
+# TODO: this file is probably ill-named. A main without a __main__ and with
+# classes defined, and application-specific (database...)
+
+
 class Station(object):
     """docstring for GetOneStation."""
 
@@ -382,7 +386,7 @@ class Database(object):
         begin_date, end_date)
         values ('{station_name}', '{ctry}',
                 '{usaf}', '{wban}', '{lat}', '{lon}',
-                '{elev_m}', '{begin}', '{end}'
+                '{elev_m}', '{begin_date}', '{end_date}'
         )
         '''
         self.insert_one(sql)
@@ -514,13 +518,13 @@ class Database(object):
             ('WIND_SPEED', 'wind_speed'),
             ('OPAQUE_SKY_COVER', 'opaque_sky_cover'),
             ('TOTAL_SKY_COVER', 'total_sky_cover'),
-            ('SLP_Pa', 'sea_level_pressure_hpa'),
+            ('SLP_Pa', 'sea_level_pressure_pa'),
             ('AZIMUTH_ANGLE', 'azimuth_angle'),
             ('ZENITH_ANGLE', 'zenith_ange')
         ]
 
         sql_list = []
-        for datetime, row in df.iterrows():
+        for dt, row in df.iterrows():
             sql = f'''
             insert into "{self.schema}".weather_data(
             weather_station_id,
@@ -528,7 +532,7 @@ class Database(object):
             time
             '''
             sql_values = f"""
-            values ('{self.weather_station_id}', 'hourly', '{datetime}'
+            values ('{self.weather_station_id}', 'hourly', '{dt}'
             """
 
             for name_df, name_sql in names:
@@ -550,16 +554,16 @@ class Database(object):
 
         sql_daily_hdd_cdd = f"""
         with avg_table as (
-        	SELECT
-        	date_trunc('day', time) as gb_day,
-        	AVG(air_temperature_c) as avg_temp_c,
-        	AVG(air_temperature_f) as avg_temp_f,
-        	AVG(dewp_c) as avg_dewp_c
-        	FROM "altanova-data-warehouse".weather_data
-        	WHERE (frequency = 'hourly'
+            SELECT
+            date_trunc('day', time) as gb_day,
+            AVG(air_temperature_c) as avg_temp_c,
+            AVG(air_temperature_f) as avg_temp_f,
+            AVG(dewp_c) as avg_dewp_c
+            FROM "altanova-data-warehouse".weather_data
+            WHERE (frequency = 'hourly'
                   and weather_station_id={self.weather_station_id})
-        	GROUP BY gb_day
-        	ORDER BY gb_day
+            GROUP BY gb_day
+            ORDER BY gb_day
         ),
 
         daily_table as (
@@ -569,12 +573,12 @@ class Database(object):
         avg_temp_f as air_temperature_f,
         avg_dewp_c as dewp_c,
         case
-        	when avg_temp_f - {self.cdd_threshold} > 0
+            when avg_temp_f - {self.cdd_threshold} > 0
             then avg_temp_f - {self.cdd_threshold}
             else 0
         end as cdd,
         case
-        	when {self.hdd_threshold} - avg_temp_f > 0
+            when {self.hdd_threshold} - avg_temp_f > 0
             then {self.hdd_threshold} - avg_temp_f
             else 0
         end as hdd
@@ -592,19 +596,20 @@ class Database(object):
         from daily_table
         """
 
+        # TODO: f-string missing placeholder
         sql_monthly_table = sql_daily_hdd_cdd + f"""
         ,
         monthly_table as (
-        	SELECT
-        	date_trunc('month', gb_day) as gb_month,
-        	SUM(cdd) as cdd,
-        	SUM(hdd) as hdd,
-        	AVG(air_temperature_c) as air_temperature_c,
-        	AVG(air_temperature_f) as air_temperature_f,
-        	AVG(dewp_c) as dewp_c
-        	FROM daily_table
-        	GROUP BY gb_month
-        	ORDER BY gb_month
+            SELECT
+            date_trunc('month', gb_day) as gb_month,
+            SUM(cdd) as cdd,
+            SUM(hdd) as hdd,
+            AVG(air_temperature_c) as air_temperature_c,
+            AVG(air_temperature_f) as air_temperature_f,
+            AVG(dewp_c) as dewp_c
+            FROM daily_table
+            GROUP BY gb_month
+            ORDER BY gb_month
 
         )
         select gb_month as datetime, ROUND(cdd, 2) as cdd_65_f,

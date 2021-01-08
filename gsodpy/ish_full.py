@@ -38,6 +38,9 @@ def parse_rh(data):
 
 
 def parse_total_sky_cover(data):
+    # TODO: Sky cover is stored as an enum represented by an int
+    # eg: (00 = clear, 19=dark overcast, 99 = missing)
+    # Perhaps we should store this as an enum?
     if 'GF1' in data:
         loc = data.find('GF1')
         total_sky_cover = int(data[loc + 3:loc + 5])
@@ -50,6 +53,9 @@ def parse_total_sky_cover(data):
 
 
 def parse_opaque_sky_cover(data):
+    # TODO: Sky cover is stored as an enum represented by an int
+    # eg: (00 = clear, 19=dark overcast, 99 = missing)
+    # Perhaps we should store this as an enum?
     if 'GF1' in data:
         loc = data.find('GF1')
         opaque_sky_cover = int(data[loc + 5:loc + 7])

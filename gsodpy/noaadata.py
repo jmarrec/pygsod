@@ -159,7 +159,7 @@ class NOAAData():
         return self.stations
 
     def get_stations_from_user_input(self, country, state, station_name,
-                                     latitude, longitude):
+                                     latitude, longitude, year=None):
         """
         convert country, state, station name input by user into USAF-WBANs
 
@@ -192,7 +192,7 @@ class NOAAData():
                 return self.stations
         else:
             self.stations = [
-                self.isd.closest_weather_station(latitude, longitude)]
+                self.isd.closest_weather_station(latitude, longitude, year)]
             return self.stations
 
     def set_stations(self, usaf_wbans):

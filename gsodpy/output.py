@@ -80,18 +80,18 @@ class GetOneStation(object):
 
     def download_historical_data(self):
 
-        isd_full = NOAAData(data_type=DataType.isd_full)
-        isd_full.set_years_range(
+        self.isd_full = NOAAData(data_type=DataType.isd_full)
+        self.isd_full.set_years_range(
             start_year=self.start_year, end_year=self.end_year)
 
-        isd_full.get_stations_from_user_input(
+        self.isd_full.get_stations_from_user_input(
             self.country, self.state, self.station_name,
-            self.latitude, self.longitude)
+            self.latitude, self.longitude, self.end_year)
 
-        isd_full.get_all_data()
-        parse_ish_file(isd_full)
+        self.isd_full.get_all_data()
+        parse_ish_file(self.isd_full)
 
-        list_ops_files = isd_full.ops_files
+        list_ops_files = self.isd_full.ops_files
 
         return list_ops_files
 

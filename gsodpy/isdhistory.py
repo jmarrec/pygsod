@@ -191,7 +191,7 @@ class ISDHistory():
             cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
         return 12742 * asin(sqrt(a))
 
-    def closest_weather_station(self, lat, lon):
+    def closest_weather_station(self, lat, lon, year=None):
         """
         Returns the USAF-WBAN of the closest weather station to the point
         specified by latitude and longitude as arguments
@@ -202,5 +202,9 @@ class ISDHistory():
                                                                     lat, lon),
                                             axis=1)
         # print(self.df.loc[self.df['distance'].argmin()])
-        d = self.df['distance'].argmin()
-        return self.df.index[d]
+
+        df = self.df.copy()
+        if year is not None:
+            df = df[df['END'].dt.year >= year]
+        d = df['distance'].argmin()
+        return df.index[d]

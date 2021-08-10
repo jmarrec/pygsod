@@ -10,7 +10,9 @@ import pandas as pd
 import datetime
 import re
 
-import progressbar
+
+from tqdm import tqdm
+# import progressbar
 
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
 from gsodpy.utils import (is_list_like, ReturnCode,
@@ -253,27 +255,27 @@ class NOAAData():
 
             raise ValueError(msg)
 
-        with progressbar.ProgressBar(max_value=max_value) as bar:
-            i = 0
-            for year in self.years:
-                for usaf_wban in self.stations:
-                    i += 1
+        # with progressbar.ProgressBar(max_value=max_value) as bar:
+        i = 0
+        for year in tqdm(self.years):
+            for usaf_wban in self.stations:
+                i += 1
 
-                    # Try downloading
-                    (return_code,
-                     op_path) = self.get_year_file(year=year,
-                                                   usaf_wban=usaf_wban)
+                # Try downloading
+                (return_code,
+                    op_path) = self.get_year_file(year=year,
+                                                usaf_wban=usaf_wban)
 
-                    print(op_path)
-                    if return_code == ReturnCode.success:
-                        c += 1
-                        self.ops_files.append(op_path)
-                    elif return_code == ReturnCode.missing:
-                        r += 1
-                    elif return_code == ReturnCode.outdated:
-                        o += 1
+                print(op_path)
+                if return_code == ReturnCode.success:
+                    c += 1
+                    self.ops_files.append(op_path)
+                elif return_code == ReturnCode.missing:
+                    r += 1
+                elif return_code == ReturnCode.outdated:
+                    o += 1
 
-                    bar.update(i)
+                # bar.update(i)
 
         print("Success: {} files have been stored. ".format(c))
         print("{} station IDs didn't exist. ".format(r))

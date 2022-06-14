@@ -213,6 +213,7 @@ def parse_ish_file(isd_full):
         i_op['SLP_Pa'] = i_op['SLP_hPa'] * 100
 
         # ADDITIONAL DATA SECTION
+        i_op['ADD_DATA'] = i_op['ADD_DATA'].fillna("")
         i_op['RELATIVE_HUMIDITY_PERCENTAGE'] = i_op['ADD_DATA'].apply(parse_rh)
         i_op['TOTAL_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_total_sky_cover)
         i_op['OPAQUE_SKY_COVER'] = i_op[

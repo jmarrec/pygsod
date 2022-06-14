@@ -151,7 +151,6 @@ class NOAAData():
         # Load weather stations into lists. Stations[i] returns the stations
         # Can get it's length by calling 'len(stations)'
         # Will ignore everything that's after the pound `#` sign
-
         with open(weather_stations_file, 'r') as f:
             usaf_wbans = [line.split('#')[0].strip() for line in f.readlines()
                           if not line.startswith('#')]
@@ -176,7 +175,7 @@ class NOAAData():
         """
         isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
         df = pd.read_csv(isd_history_file_name)
-
+        print("Station name", station_name)
         if (country is not None) and (station_name is not None):
             if state is None:
                 df_sub = df[(df['CTRY'] == country)
@@ -191,6 +190,7 @@ class NOAAData():
             else:
                 self.stations = [str(df_sub['USAF'].values[0]) +
                                  '-' + str(df_sub['WBAN'].values[0])]
+                print(self.stations)
                 return self.stations
         else:
             self.stations = [
@@ -398,12 +398,21 @@ class NOAAData():
 
         # Change current working directory (CWD)
         # os.chdir(weatherfolder)
+        
+        # Sanitize: should have been done already, but better safe... fast
+        # anyways
+        usaf_wban = sanitize_usaf_wban(usaf_wban)
 
         # Construct file names
         remote_op_name = '{id}-{y}.{e}'.format(
             id=usaf_wban, y=year, e=self.gz_ext)
+
         local_op_name = '{s}-{y}.{e}'.format(
-            s=df_isd.loc[usaf_wban, 'STATION NAME'], y=year, e=self.gz_ext)
+            #replace slash in the station name to not infer on the Path
+            s=df_isd.loc[usaf_wban, 'STATION NAME'].replace('/', ' '),
+            y=year,
+            e=self.gz_ext
+            )
 
         remote_folder = os.path.join(self.ftp_folder, str(year))
         local_folder = os.path.join(self.weather_dir, str(year))
@@ -415,10 +424,6 @@ class NOAAData():
             remote_folder, remote_op_name).replace("\\", "/")
         local_path = os.path.join(
             local_folder, local_op_name).replace("\\", "/")
-
-        # Sanitize: should have been done already, but better safe... fast
-        # anyways
-        usaf_wban = sanitize_usaf_wban(usaf_wban)
 
         # Check if there's data or not
         end_year = df_isd.loc[usaf_wban, 'END'].year

@@ -1,5 +1,5 @@
 {	
-	"type_of_file": "historical",
+	"type_of_file": "TMY",
 	"type_of_output": "CSV", 
 	"hdd_threshold": 70, 
 	"cdd_threshold": 80,
@@ -7,9 +7,9 @@
 	"start_year": 2010,
 	"end_year": 2021,
 
-	"country": "US",
+	"country": "USA",
 	"state": "NY",
-	"station_name": "ELMIRA/CORNING RGNL ARPT",
+	"station_name": "Binghamton-Edwin A Link Field",
 
 	"latitude": null,
 	"longitude": null

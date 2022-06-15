@@ -68,7 +68,8 @@ class GetOneStation(object):
 
         elif self.type_of_file == 'TMY':
             # download weather data from EP+ website
-            tmy_data = TMY(self.country, self.state, self.station_name)
+            tmy_data = TMY(self.country, self.station_name, self.state)
+            self.tmy =tmy_data
             list_files = [tmy_data.fname]
 
         else:

@@ -125,7 +125,7 @@ class TMY(object):
         epw = EPW()
         epw.read(self.filepath)
 
-        dic = {#'year': [i.year for i in epw.weatherdata],
+        dic = {'year': [i.year for i in epw.weatherdata],
                'month': [i.month for i in epw.weatherdata],
                'day': [i.day for i in epw.weatherdata],
                'hour': [i.hour for i in epw.weatherdata],

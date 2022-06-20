@@ -32,14 +32,14 @@ class GetOneStation(object):
         self.end_year = args['end_year']
 
     def run(self):
-
+        print(self.country, self.state)
         self.list_files = self.get_data()
 
         # output files
         for file in self.list_files:
-            o = Output(file, self.type_output, self.hdd_threshold,
+            self.o = Output(file, self.type_output, self.hdd_threshold,
                        self.cdd_threshold)
-            o.output_files()
+            self.o.output_files()
 
     def get_one_dataframe(self):
 
@@ -210,6 +210,7 @@ class Output(object):
 
         df = self.get_hourly_data()
         df.to_csv(self.hourly_file_name + '.csv')
+        self.df_hourly = df
 
         # epw
         if self.type_of_output == 'EPW':
@@ -218,9 +219,11 @@ class Output(object):
         else:
             # daily
             df_daily = self.output_daily(df_hourly=df)
+            self.df_daily = df_daily
             # monthly
             df_monthly = self.output_monthly(
                 df_hourly=df, df_daily=df_daily)
+            self.df_monthly = df_monthly
 
             # csv
             if self.type_of_output == 'CSV':

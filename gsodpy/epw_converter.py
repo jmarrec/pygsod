@@ -16,7 +16,7 @@ def clean_df(df, file):
     # df = df[df.index.year == year]
     print("start parsing", file)
     print("length of original dataset:", len(df))
-
+    df.index = pd.to_datetime(df.index)
     df = df.groupby(pd.Grouper(freq='1H')).mean()
     print("length of data after groupby hour", len(df))
 

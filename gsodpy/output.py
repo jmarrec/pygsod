@@ -3,6 +3,7 @@ from gsodpy.noaadata import NOAAData
 from gsodpy.utils import DataType
 from gsodpy.ish_full import parse_ish_file
 from gsodpy.tmy_download import TMY
+from pathlib import Path
 
 from gsodpy.constants import WEATHER_DIR, RESULT_DIR
 import os
@@ -32,7 +33,6 @@ class GetOneStation(object):
         self.end_year = args['end_year']
 
     def run(self):
-        print(self.country, self.state)
         self.list_files = self.get_data()
 
         # output files
@@ -102,8 +102,9 @@ class Output(object):
 
     def __init__(self, file, type_of_output, hdd_threshold, cdd_threshold):
 
-        self.file = file
-        self.op_file_name = self.file.split('/')[-1]
+        self.file = Path(file)
+        self.op_file_name = self.file.name
+        print(self.op_file_name)
 
         self._file_names()
 

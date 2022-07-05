@@ -6,7 +6,7 @@ from gsodpy.tmy_download import TMY
 from pathlib import Path
 
 from gsodpy.constants import WEATHER_DIR, RESULT_DIR
-import os
+from pathlib import Path
 import pandas as pd
 from pyepw.epw import EPW
 import datetime
@@ -144,18 +144,18 @@ class Output(object):
         return df
 
     def _file_names(self):
-        self.hourly_file_name = os.path.join(
-            RESULT_DIR, self.op_file_name + "-hourly"
+        self.hourly_file_name = (
+            RESULT_DIR / self.op_file_name / "-hourly"
         )
 
         # daily
-        self.daily_file_name = os.path.join(
-            RESULT_DIR, self.op_file_name + "-daily"
+        self.daily_file_name = (
+            RESULT_DIR / self.op_file_name / "-daily"
         )
 
         # monthly
-        self.monthly_file_name = os.path.join(
-            RESULT_DIR, self.op_file_name + "-monthly"
+        self.monthly_file_name = (
+            RESULT_DIR / self.op_file_name / "-monthly"
         )
 
     def output_daily(self, df_hourly):

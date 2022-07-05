@@ -16,5 +16,5 @@ if not WEATHER_DIR.exists():
 
 RESULT_DIR = GSOD_DIR / "../results"
 if not RESULT_DIR.exists():
-    os.makedirs(WEATHER_DIR)
+    RESULT_DIR.mkdir(parents=True)
 

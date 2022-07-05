@@ -213,10 +213,6 @@ class NOAAData:
                 print(self.stations)
                 return self.stations
 
-        elif (usaf is not None) and (wban is not None):
-            self.stations = [str(usaf) + '-' + str(wban)]
-            return self.stations
-
         elif (latitude is not None) and (longitude is not None):
             self.stations = [
                 self.isd.closest_weather_station(latitude, longitude, year)

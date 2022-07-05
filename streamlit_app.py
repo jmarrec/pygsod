@@ -178,7 +178,7 @@ with col1:
         "HDD Threshold",
         min_value=30,
         max_value=100,
-        value=70,
+        value=65,
         step=1,
         on_change=set_to_false,
     )
@@ -187,7 +187,7 @@ with col2:
         "CDD Threshold",
         min_value=30,
         max_value=100,
-        value=80,
+        value=65,
         step=1,
         on_change=set_to_false,
     )

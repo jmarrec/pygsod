@@ -145,17 +145,17 @@ class Output(object):
 
     def _file_names(self):
         self.hourly_file_name = (
-            RESULT_DIR / self.op_file_name / "-hourly"
+            RESULT_DIR / (self.op_file_name + "-hourly")
         )
 
         # daily
         self.daily_file_name = (
-            RESULT_DIR / self.op_file_name / "-daily"
+            RESULT_DIR / (self.op_file_name + "-daily")
         )
 
         # monthly
         self.monthly_file_name = (
-            RESULT_DIR / self.op_file_name / "-monthly"
+            RESULT_DIR / (self.op_file_name + "-monthly")
         )
 
     def output_daily(self, df_hourly):
@@ -224,7 +224,7 @@ class Output(object):
         # op_file_name = self.file.split('/')[-1]
 
         df = self.get_hourly_data()
-        df.to_csv(self.hourly_file_name + ".csv")
+        df.to_csv(str(self.hourly_file_name) + ".csv")
         self.df_hourly = df
 
         # epw
@@ -241,13 +241,13 @@ class Output(object):
 
             # csv
             if self.type_of_output == "CSV":
-                df_daily.to_csv(self.daily_file_name + ".csv")
-                df_monthly.to_csv(self.monthly_file_name + ".csv")
+                df_daily.to_csv(str(self.daily_file_name) + ".csv")
+                df_monthly.to_csv(str(self.monthly_file_name) + ".csv")
 
             # json
             if self.type_of_output == "JSON":
-                df_daily.to_json(self.daily_file_name + ".json")
-                df_monthly.to_json(self.monthly_file_name + ".json")
+                df_daily.to_json(str(self.daily_file_name) + ".json")
+                df_monthly.to_json(str(self.monthly_file_name) + ".json")
 
     def create_dataframe(self):
         df = self.get_hourly_data()

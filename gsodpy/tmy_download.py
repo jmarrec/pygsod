@@ -1,14 +1,13 @@
 # from pkg_resources import resource_filename
-import os
 import pandas as pd
 import requests
 import datetime
-from bs4 import BeautifulSoup
 from pyepw.epw import EPW
 from gsodpy.constants import RESULT_DIR, WEATHER_DIR
 from typing import List, Optional
 from pathlib import Path
 import warnings
+
 
 class TMY(object):
     """Provide Typical Meteorological Year data for selected location."""

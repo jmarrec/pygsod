@@ -8,10 +8,10 @@ from math import cos, asin, sqrt
 
 from gsodpy.constants import SUPPORT_DIR
 
-ISDHISTORY_PATH = os.path.join(SUPPORT_DIR, 'isd-history.csv')
+ISDHISTORY_PATH = os.path.join(SUPPORT_DIR, "isd-history.csv")
 
 
-class ISDHistory():
+class ISDHistory:
     """
     Class for the ISDHistory file and methods
     """
@@ -37,8 +37,9 @@ class ISDHistory():
         self.update_isd_history(isd_history_path=self.isd_history_path)
         self.df = self.parse_isd(isd_history_path=self.isd_history_path)
 
-    def update_isd_history(self, isd_history_path=None, force=False,
-                           dry_run=False):
+    def update_isd_history(
+        self, isd_history_path=None, force=False, dry_run=False
+    ):
         """
         Will download the `isd-history.csv` file
         if one of two conditions are true:
@@ -76,11 +77,13 @@ class ISDHistory():
         update_needed = False
 
         if os.path.isfile(isd_history_path):
-            print("isd-history.csv was last modified on: %s" %
-                  time.ctime(os.path.getmtime(self.isd_history_path)))
+            print(
+                "isd-history.csv was last modified on: %s"
+                % time.ctime(os.path.getmtime(self.isd_history_path))
+            )
             # Check if the isd-history.csv is older than 1 month
-            _d = (1 * 30 * 24 * 60 * 60)
-            if (time.time() - os.path.getmtime(self.isd_history_path) > _d):
+            _d = 1 * 30 * 24 * 60 * 60
+            if time.time() - os.path.getmtime(self.isd_history_path) > _d:
                 update_needed = True
             elif force:
                 print("Forcing update anyways")
@@ -94,8 +97,10 @@ class ISDHistory():
                 self.download_isd(isd_history_path)
 
         else:
-            print("No updates necessary: isd-history.csv is not"
-                  " older than one month")
+            print(
+                "No updates necessary: isd-history.csv is not"
+                " older than one month"
+            )
 
         return update_needed
 
@@ -117,17 +122,18 @@ class ISDHistory():
 
         """
 
-        ftp = FTP('ftp.ncdc.noaa.gov')
+        ftp = FTP("ftp.ncdc.noaa.gov")
         ftp.login()
 
         # Change current working directory on FTP
         # isd-history is now stored there
-        ftp.cwd('/pub/data/noaa/')
+        ftp.cwd("/pub/data/noaa/")
         success = False
         # Try to retrieve it
         try:
-            ftp.retrbinary('RETR isd-history.csv',
-                           open(isd_history_path, 'wb').write)
+            ftp.retrbinary(
+                "RETR isd-history.csv", open(isd_history_path, "wb").write
+            )
             success = True
         except Exception as err:
             print("'isd-history.csv' failed to download")
@@ -174,10 +180,11 @@ class ISDHistory():
         # should always be len of 6, WBAN len 5
         # USAF now is a string, and has len 6 so no problem
 
-        df_isd['StationID'] = (df_isd['USAF'] + '-' +
-                               df_isd['WBAN'].map("{:05d}".format))
+        df_isd["StationID"] = (
+            df_isd["USAF"] + "-" + df_isd["WBAN"].map("{:05d}".format)
+        )
 
-        df_isd = df_isd.set_index('StationID')
+        df_isd = df_isd.set_index("StationID")
 
         return df_isd
 
@@ -187,8 +194,11 @@ class ISDHistory():
 
         """
         p = 0.017453292519943295
-        a = 0.5 - cos((lat2-lat1)*p)/2 + \
-            cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
+        a = (
+            0.5
+            - cos((lat2 - lat1) * p) / 2
+            + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
+        )
         return 12742 * asin(sqrt(a))
 
     def closest_weather_station(self, lat, lon, year=None):
@@ -197,14 +207,13 @@ class ISDHistory():
         specified by latitude and longitude as arguments
 
         """
-        self.df['distance'] = self.df.apply(lambda x: self.distance(x['LAT'],
-                                                                    x['LON'],
-                                                                    lat, lon),
-                                            axis=1)
+        self.df["distance"] = self.df.apply(
+            lambda x: self.distance(x["LAT"], x["LON"], lat, lon), axis=1
+        )
         # print(self.df.loc[self.df['distance'].argmin()])
 
         df = self.df.copy()
         if year is not None:
-            df = df[df['END'].dt.year >= year]
-        d = df['distance'].argmin()
+            df = df[df["END"].dt.year >= year]
+        d = df["distance"].argmin()
         return df.index[d]

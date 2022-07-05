@@ -12,18 +12,17 @@ import re
 
 
 from tqdm import tqdm
+
 # import progressbar
 
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
-from gsodpy.utils import (is_list_like, ReturnCode,
-                          DataType, sanitize_usaf_wban)
+from gsodpy.utils import is_list_like, ReturnCode, DataType, sanitize_usaf_wban
 from gsodpy.isdhistory import ISDHistory
 
 import warnings
 
 
-class NOAAData():
-
+class NOAAData:
     def __init__(self, data_type, isd_path=None, weather_dir=None):
         """
         Init the NOAAData main object, and attaches an `isd` (class ISD) to it
@@ -45,20 +44,21 @@ class NOAAData():
 
         _folder_name = None
         self.data_type = data_type
-        self.gz_ext = 'gz'
+        self.gz_ext = "gz"
         if data_type == DataType.gsod:
-            self.ftp_folder = '/pub/data/gsod/'
-            _folder_name = 'gsod'
-            self.gz_ext = 'op.gz'
+            self.ftp_folder = "/pub/data/gsod/"
+            _folder_name = "gsod"
+            self.gz_ext = "op.gz"
         elif data_type == DataType.isd_full:
-            self.ftp_folder = '/pub/data/noaa/'
-            _folder_name = 'isd_full'
+            self.ftp_folder = "/pub/data/noaa/"
+            _folder_name = "isd_full"
         elif data_type == DataType.isd_lite:
-            self.ftp_folder = '/pub/data/noaa/isd-lite'
-            _folder_name = 'isd_lite'
+            self.ftp_folder = "/pub/data/noaa/isd-lite"
+            _folder_name = "isd_lite"
         else:
-            raise NotImplementedError("DataType not supported: "
-                                      "{}".format(data_type))
+            raise NotImplementedError(
+                "DataType not supported: " "{}".format(data_type)
+            )
 
         if weather_dir is None:
             self.weather_dir = os.path.join(WEATHER_DIR, _folder_name)
@@ -139,28 +139,35 @@ class NOAAData():
 
         """
         if weather_stations_file is None:
-            weather_stations_file = os.path.join(self.weather_dir,
-                                                 'weather_stations.txt')
+            weather_stations_file = os.path.join(
+                self.weather_dir, "weather_stations.txt"
+            )
 
         if not os.path.isfile(weather_stations_file):
-            print("File '{}' doesn't exist."
-                  "Place a file there in which you should put the USAF-WBAN "
-                  "of stations you want, "
-                  "one per line".format(weather_stations_file))
+            print(
+                "File '{}' doesn't exist."
+                "Place a file there in which you should put the USAF-WBAN "
+                "of stations you want, "
+                "one per line".format(weather_stations_file)
+            )
 
         # Load weather stations into lists. Stations[i] returns the stations
         # Can get it's length by calling 'len(stations)'
         # Will ignore everything that's after the pound `#` sign
-        with open(weather_stations_file, 'r') as f:
-            usaf_wbans = [line.split('#')[0].strip() for line in f.readlines()
-                          if not line.startswith('#')]
+        with open(weather_stations_file, "r") as f:
+            usaf_wbans = [
+                line.split("#")[0].strip()
+                for line in f.readlines()
+                if not line.startswith("#")
+            ]
 
         self.stations = [sanitize_usaf_wban(x) for x in usaf_wbans]
 
         return self.stations
 
-    def get_stations_from_user_input(self, country, state, station_name,
-                                     latitude, longitude, year=None):
+    def get_stations_from_user_input(
+        self, country, state, station_name, latitude, longitude, year=None
+    ):
         """
         convert country, state, station name input by user into USAF-WBANs
 
@@ -173,28 +180,38 @@ class NOAAData():
             stations (list of str): sanitized
 
         """
-        isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
+        isd_history_file_name = os.path.join(SUPPORT_DIR, "isd-history.csv")
         df = pd.read_csv(isd_history_file_name)
         print("Station name", station_name)
         if (country is not None) and (station_name is not None):
             if state is None:
-                df_sub = df[(df['CTRY'] == country)
-                            & (df['STATION NAME'] == station_name)]
+                df_sub = df[
+                    (df["CTRY"] == country)
+                    & (df["STATION NAME"] == station_name)
+                ]
             else:
-                df_sub = df[(df['CTRY'] == country) & (df['STATE'] == state)
-                            & (df['STATION NAME'] == station_name)]
+                df_sub = df[
+                    (df["CTRY"] == country)
+                    & (df["STATE"] == state)
+                    & (df["STATION NAME"] == station_name)
+                ]
             if len(df_sub) == 0:
                 raise ValueError(
-                    'The input country, state and station name is not '
-                    'found in isd-history.')
+                    "The input country, state and station name is not "
+                    "found in isd-history."
+                )
             else:
-                self.stations = [str(df_sub['USAF'].values[0]) +
-                                 '-' + str(df_sub['WBAN'].values[0])]
+                self.stations = [
+                    str(df_sub["USAF"].values[0])
+                    + "-"
+                    + str(df_sub["WBAN"].values[0])
+                ]
                 print(self.stations)
                 return self.stations
         else:
             self.stations = [
-                self.isd.closest_weather_station(latitude, longitude, year)]
+                self.isd.closest_weather_station(latitude, longitude, year)
+            ]
             return self.stations
 
     def set_stations(self, usaf_wbans):
@@ -250,8 +267,10 @@ class NOAAData():
         max_value = len(self.years) * len(self.stations)
 
         if max_value == 0:
-            msg = ("Make sure you use `set_years` or `set_years_range` "
-                   "AND `set_stations` or `get_stations_from_file`")
+            msg = (
+                "Make sure you use `set_years` or `set_years_range` "
+                "AND `set_stations` or `get_stations_from_file`"
+            )
 
             raise ValueError(msg)
 
@@ -262,9 +281,9 @@ class NOAAData():
                 i += 1
 
                 # Try downloading
-                (return_code,
-                    op_path) = self.get_year_file(year=year,
-                                                usaf_wban=usaf_wban)
+                (return_code, op_path) = self.get_year_file(
+                    year=year, usaf_wban=usaf_wban
+                )
 
                 print(op_path)
                 if return_code == ReturnCode.success:
@@ -279,8 +298,10 @@ class NOAAData():
 
         print("Success: {} files have been stored. ".format(c))
         print("{} station IDs didn't exist. ".format(r))
-        print("{} stations stopped recording data before a year "
-              "that was requested".format(o))
+        print(
+            "{} stations stopped recording data before a year "
+            "that was requested".format(o)
+        )
 
         return (c, r, o)
 
@@ -323,12 +344,13 @@ class NOAAData():
 
         # TODO: CHECK IF FILE EXISTS BEFORE DOWNLOADING
 
-        return_code, op_gz_path = self._get_year_file(year=year,
-                                                      usaf_wban=usaf_wban,
-                                                      ftp=ftp)
+        return_code, op_gz_path = self._get_year_file(
+            year=year, usaf_wban=usaf_wban, ftp=ftp
+        )
         if return_code == ReturnCode.success:
-            op_path = self._cleanup_extract_file(op_gz_path=op_gz_path,
-                                                 delete_op_gz=True)
+            op_path = self._cleanup_extract_file(
+                op_gz_path=op_gz_path, delete_op_gz=True
+            )
 
         return return_code, op_path
 
@@ -382,37 +404,40 @@ class NOAAData():
         if ftp is None:
             to_close = True
             # Log to NOAA ftp
-            ftp = FTP('ftp.ncdc.noaa.gov')
+            ftp = FTP("ftp.ncdc.noaa.gov")
             ftp.login()
         else:
-            if ftp.host != 'ftp.ncdc.noaa.gov':
-                raise ValueError("ftp should be logged into "
-                                 "'ftp.ncdc.noaa.gov' not into "
-                                 "'{}'".format(ftp.host))
+            if ftp.host != "ftp.ncdc.noaa.gov":
+                raise ValueError(
+                    "ftp should be logged into "
+                    "'ftp.ncdc.noaa.gov' not into "
+                    "'{}'".format(ftp.host)
+                )
 
         # Load dataframe of isd-history
         df_isd = self.isd.df
 
         # Open an error log file.
-        ferror = open(os.path.join(SUPPORT_DIR, 'errors.txt'), 'w')
+        ferror = open(os.path.join(SUPPORT_DIR, "errors.txt"), "w")
 
         # Change current working directory (CWD)
         # os.chdir(weatherfolder)
-        
+
         # Sanitize: should have been done already, but better safe... fast
         # anyways
         usaf_wban = sanitize_usaf_wban(usaf_wban)
 
         # Construct file names
-        remote_op_name = '{id}-{y}.{e}'.format(
-            id=usaf_wban, y=year, e=self.gz_ext)
+        remote_op_name = "{id}-{y}.{e}".format(
+            id=usaf_wban, y=year, e=self.gz_ext
+        )
 
-        local_op_name = '{s}-{y}.{e}'.format(
-            #replace slash in the station name to not infer on the Path
-            s=df_isd.loc[usaf_wban, 'STATION NAME'].replace('/', ' '),
+        local_op_name = "{s}-{y}.{e}".format(
+            # replace slash in the station name to not infer on the Path
+            s=df_isd.loc[usaf_wban, "STATION NAME"].replace("/", " "),
             y=year,
-            e=self.gz_ext
-            )
+            e=self.gz_ext,
+        )
 
         remote_folder = os.path.join(self.ftp_folder, str(year))
         local_folder = os.path.join(self.weather_dir, str(year))
@@ -420,13 +445,15 @@ class NOAAData():
         if not os.path.exists(local_folder):
             os.makedirs(local_folder)
 
-        remote_path = os.path.join(
-            remote_folder, remote_op_name).replace("\\", "/")
-        local_path = os.path.join(
-            local_folder, local_op_name).replace("\\", "/")
+        remote_path = os.path.join(remote_folder, remote_op_name).replace(
+            "\\", "/"
+        )
+        local_path = os.path.join(local_folder, local_op_name).replace(
+            "\\", "/"
+        )
 
         # Check if there's data or not
-        end_year = df_isd.loc[usaf_wban, 'END'].year
+        end_year = df_isd.loc[usaf_wban, "END"].year
 
         return_code = None
         if year <= end_year:
@@ -439,10 +466,13 @@ class NOAAData():
 
             # Try to retrieve it
             try:
-                ftp.retrbinary('RETR ' + remote_path, open(local_path,
-                                                           'wb').write)
-                print("Station downloaded:" + df_isd.loc[usaf_wban,
-                                                         'STATION NAME'])
+                ftp.retrbinary(
+                    "RETR " + remote_path, open(local_path, "wb").write
+                )
+                print(
+                    "Station downloaded:"
+                    + df_isd.loc[usaf_wban, "STATION NAME"]
+                )
 
                 return_code = ReturnCode.success
 
@@ -453,9 +483,13 @@ class NOAAData():
 
         else:
             return_code = ReturnCode.outdated
-            msg = ("{} doesn't have data up to this year. It stopped on:"
-                   "{}".format(df_isd.loc[usaf_wban, 'STATION NAME'],
-                               df_isd.loc[usaf_wban, 'END'].date()))
+            msg = (
+                "{} doesn't have data up to this year. It stopped on:"
+                "{}".format(
+                    df_isd.loc[usaf_wban, "STATION NAME"],
+                    df_isd.loc[usaf_wban, "END"].date(),
+                )
+            )
             warnings.warn(msg, UserWarning)
 
         if to_close:
@@ -498,17 +532,19 @@ class NOAAData():
             if gz == ".gz":
                 print("unzipping '{}'".format(op_gz_path))
                 # Open the gzip file
-                with gzip.open(op_gz_path, 'rb') as in_file:
+                with gzip.open(op_gz_path, "rb") as in_file:
                     # Open a second file to write the uncompressed stream
-                    with open(op_path, 'wb') as out_file:
+                    with open(op_path, "wb") as out_file:
                         out_file.write(in_file.read())
 
                 # Deletes the op_gz_path
                 if delete_op_gz:
                     os.remove(op_gz_path)
             else:
-                raise ValueError("Was expecting an (.op).gz file to be passed,"
-                                 " not: '{}'".format(op_gz_path))
+                raise ValueError(
+                    "Was expecting an (.op).gz file to be passed,"
+                    " not: '{}'".format(op_gz_path)
+                )
 
         return op_path
 
@@ -559,9 +595,9 @@ class NOAAData():
                     if os.path.splitext(fname)[1] == ".gz":
                         print("unzipping ", fname)
                         # Open the gzip file
-                        in_file = gzip.open(path, 'rb')
+                        in_file = gzip.open(path, "rb")
                         # Open a second file to write the uncompressed stream
-                        out_file = open(outpath, 'wb')
+                        out_file = open(outpath, "wb")
                         out_file.write(in_file.read())
 
                         # close both
@@ -570,14 +606,14 @@ class NOAAData():
                         os.remove(path)
 
                         # Print latest date
-                        with open(outpath, 'rb') as out_file:
+                        with open(outpath, "rb") as out_file:
                             first = next(out_file).decode()
                             out_file.seek(-276, 2)
                             last = out_file.readlines()[-1].decode()
 
-                            date_string = re.split(r'\s+', last)[2]
-                            date = datetime.datetime \
-                                .strptime(date_string, '%Y%m%d') \
-                                .strftime('%d %b %Y')
+                            date_string = re.split(r"\s+", last)[2]
+                            date = datetime.datetime.strptime(
+                                date_string, "%Y%m%d"
+                            ).strftime("%d %b %Y")
 
                             print("Data up to {}".format(date))

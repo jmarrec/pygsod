@@ -17,28 +17,29 @@ class GetOneStation(object):
 
     def __init__(self, args):
 
-        self.type_of_file = args['type_of_file']
-        self.type_output = args['type_of_output']
-        self.hdd_threshold = args['hdd_threshold']
-        self.cdd_threshold = args['cdd_threshold']
+        self.type_of_file = args["type_of_file"]
+        self.type_output = args["type_of_output"]
+        self.hdd_threshold = args["hdd_threshold"]
+        self.cdd_threshold = args["cdd_threshold"]
 
-        self.country = args['country']
-        self.state = args['state']
-        self.station_name = args['station_name']
+        self.country = args["country"]
+        self.state = args["state"]
+        self.station_name = args["station_name"]
 
-        self.latitude = args['latitude']
-        self.longitude = args['longitude']
+        self.latitude = args["latitude"]
+        self.longitude = args["longitude"]
 
-        self.start_year = args['start_year']
-        self.end_year = args['end_year']
+        self.start_year = args["start_year"]
+        self.end_year = args["end_year"]
 
     def run(self):
         self.list_files = self.get_data()
 
         # output files
         for file in self.list_files:
-            self.o = Output(file, self.type_output, self.hdd_threshold,
-                       self.cdd_threshold)
+            self.o = Output(
+                file, self.type_output, self.hdd_threshold, self.cdd_threshold
+            )
             self.o.output_files()
 
     def get_one_dataframe(self):
@@ -49,8 +50,9 @@ class GetOneStation(object):
         df_daily = pd.DataFrame()
         df_monthly = pd.DataFrame()
         for file in self.list_files:
-            o = Output(file, self.type_output, self.hdd_threshold,
-                       self.cdd_threshold)
+            o = Output(
+                file, self.type_output, self.hdd_threshold, self.cdd_threshold
+            )
             df_h, df_d, df_m = o.create_dataframe()
 
             df_hourly = pd.concat([df_hourly, df_h])
@@ -62,20 +64,21 @@ class GetOneStation(object):
         self.df_monthly = df_monthly
 
     def get_data(self):
-        if self.type_of_file == 'historical':
+        if self.type_of_file == "historical":
             # download isd_full
             list_files = self.download_historical_data()
 
-        elif self.type_of_file == 'TMY':
+        elif self.type_of_file == "TMY":
             # download weather data from EP+ website
             tmy_data = TMY(self.country, self.station_name, self.state)
-            self.tmy =tmy_data
+            self.tmy = tmy_data
             list_files = [tmy_data.fname]
 
         else:
-            raise ValueError("The type of file is not correct, it should be"
-                             " TMY or historical not {}."
-                             .format(self.type_of_file))
+            raise ValueError(
+                "The type of file is not correct, it should be"
+                " TMY or historical not {}.".format(self.type_of_file)
+            )
 
         return list_files
 
@@ -83,11 +86,17 @@ class GetOneStation(object):
 
         self.isd_full = NOAAData(data_type=DataType.isd_full)
         self.isd_full.set_years_range(
-            start_year=self.start_year, end_year=self.end_year)
+            start_year=self.start_year, end_year=self.end_year
+        )
 
         self.isd_full.get_stations_from_user_input(
-            self.country, self.state, self.station_name,
-            self.latitude, self.longitude, self.end_year)
+            self.country,
+            self.state,
+            self.station_name,
+            self.latitude,
+            self.longitude,
+            self.end_year,
+        )
 
         self.isd_full.get_all_data()
         parse_ish_file(self.isd_full)
@@ -98,7 +107,7 @@ class GetOneStation(object):
 
 
 class Output(object):
-    """Class for output weather data into specific type """
+    """Class for output weather data into specific type"""
 
     def __init__(self, file, type_of_output, hdd_threshold, cdd_threshold):
 
@@ -128,7 +137,7 @@ class Output(object):
 
     def get_hourly_data(self):
         full_path = self.file
-        df_path = '{f}.{ext}'.format(f=full_path, ext='xlsx')
+        df_path = "{f}.{ext}".format(f=full_path, ext="xlsx")
         df = pd.read_excel(df_path, index_col=0)
         df = clean_df(df, self.op_file_name)
 
@@ -136,43 +145,46 @@ class Output(object):
 
     def _file_names(self):
         self.hourly_file_name = os.path.join(
-            RESULT_DIR, self.op_file_name + '-hourly')
+            RESULT_DIR, self.op_file_name + "-hourly"
+        )
 
         # daily
         self.daily_file_name = os.path.join(
-            RESULT_DIR, self.op_file_name + '-daily')
+            RESULT_DIR, self.op_file_name + "-daily"
+        )
 
         # monthly
         self.monthly_file_name = os.path.join(
-            RESULT_DIR, self.op_file_name + '-monthly')
+            RESULT_DIR, self.op_file_name + "-monthly"
+        )
 
     def output_daily(self, df_hourly):
         """output daily data by grouping by daily
-           used in output_files()
+        used in output_files()
         """
         df_daily = df_hourly.groupby(by=df_hourly.index.date).mean()
         df_daily.index = pd.to_datetime(
-            df_daily.index)  # reset index to datetime
+            df_daily.index
+        )  # reset index to datetime
 
         # remove unnecessary columns for daily
-        for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
+        for col in ["AZIMUTH_ANGLE", "ZENITH_ANGLE", "WIND_DIRECTION"]:
             if col in df_daily.columns:
-                df_daily.drop(
-                    columns=[col], inplace=True)
+                df_daily.drop(columns=[col], inplace=True)
 
-        df_daily['HDD_F'] = df_daily['TEMP_F'].apply(self.calculate_hdd)
-        df_daily['CDD_F'] = df_daily['TEMP_F'].apply(self.calculate_cdd)
+        df_daily["HDD_F"] = df_daily["TEMP_F"].apply(self.calculate_hdd)
+        df_daily["CDD_F"] = df_daily["TEMP_F"].apply(self.calculate_cdd)
 
         return df_daily
 
     def output_monthly(self, df_hourly, df_daily):
         """output monthly data
-           used in output_files()
+        used in output_files()
         """
-        df_monthly = df_hourly.groupby(pd.Grouper(freq='1M')).mean()
+        df_monthly = df_hourly.groupby(pd.Grouper(freq="1M")).mean()
 
         # remove unnecessary columns for daily
-        for col in ['AZIMUTH_ANGLE', 'ZENITH_ANGLE', 'WIND_DIRECTION']:
+        for col in ["AZIMUTH_ANGLE", "ZENITH_ANGLE", "WIND_DIRECTION"]:
             if col in df_monthly.columns:
                 df_monthly.drop(columns=[col], inplace=True)
 
@@ -186,21 +198,23 @@ class Output(object):
         # df_monthly['HDD_F'] = monthly_hdd
         # df_monthly['CDD_F'] = monthly_cdd
 
-        df_hdd_cdd = df_daily.groupby(pd.Grouper(freq='1M')).sum()[[
-            'HDD_F', 'CDD_F']]
-        df_monthly = df_hdd_cdd.merge(df_monthly, how='left',
-                                      right_index=True, left_index=True)
+        df_hdd_cdd = df_daily.groupby(pd.Grouper(freq="1M")).sum()[
+            ["HDD_F", "CDD_F"]
+        ]
+        df_monthly = df_hdd_cdd.merge(
+            df_monthly, how="left", right_index=True, left_index=True
+        )
 
         return df_monthly
 
     def output_files(self):
         """output epw, csv or json file for each weather data for the op_file.
 
-           epw: hourly
+        epw: hourly
 
-           csv: hourly, daily, monthly
+        csv: hourly, daily, monthly
 
-           json: daily, monthly
+        json: daily, monthly
         """
         # for root, dirs, files in os.walk(WEATHER_DIR + '/isd_full'):
         #     for file in files:
@@ -210,11 +224,11 @@ class Output(object):
         # op_file_name = self.file.split('/')[-1]
 
         df = self.get_hourly_data()
-        df.to_csv(self.hourly_file_name + '.csv')
+        df.to_csv(self.hourly_file_name + ".csv")
         self.df_hourly = df
 
         # epw
-        if self.type_of_output == 'EPW':
+        if self.type_of_output == "EPW":
             epw_convert(df, self.op_file_name)
 
         else:
@@ -222,19 +236,18 @@ class Output(object):
             df_daily = self.output_daily(df_hourly=df)
             self.df_daily = df_daily
             # monthly
-            df_monthly = self.output_monthly(
-                df_hourly=df, df_daily=df_daily)
+            df_monthly = self.output_monthly(df_hourly=df, df_daily=df_daily)
             self.df_monthly = df_monthly
 
             # csv
-            if self.type_of_output == 'CSV':
-                df_daily.to_csv(self.daily_file_name + '.csv')
-                df_monthly.to_csv(self.monthly_file_name + '.csv')
+            if self.type_of_output == "CSV":
+                df_daily.to_csv(self.daily_file_name + ".csv")
+                df_monthly.to_csv(self.monthly_file_name + ".csv")
 
             # json
-            if self.type_of_output == 'JSON':
-                df_daily.to_json(self.daily_file_name + '.json')
-                df_monthly.to_json(self.monthly_file_name + '.json')
+            if self.type_of_output == "JSON":
+                df_daily.to_json(self.daily_file_name + ".json")
+                df_monthly.to_json(self.monthly_file_name + ".json")
 
     def create_dataframe(self):
         df = self.get_hourly_data()

@@ -1,10 +1,9 @@
-import streamlit as st
+import os
 import numpy as np
 import pandas as pd
-import datetime
+import streamlit as st
+
 from gsodpy.constants import SUPPORT_DIR
-import os
-from zipfile import ZipFile
 from gsodpy.output import GetOneStation
 
 ISDHISTORY_PATH = os.path.join(SUPPORT_DIR, 'isd-history.csv')
@@ -35,7 +34,6 @@ def set_to_false():
 
 
 st.set_page_config(layout="centered")
-
 
 st.title("Download Temperature Data")
 
@@ -86,25 +84,6 @@ st.markdown(
         "### Select the weather station"
     )
 
-col1, col2 = st.columns(2)
-
-with col1:
-    country = st.selectbox(
-        'Country code',
-        (df_dropdown["CTRY"].fillna('N/A').sort_values().unique()),
-        on_change=set_to_false).replace('N/A', '')
-with col2:
-    if country == '':
-        list_states = ['N/A']
-    else :
-        list_states = (
-            df_dropdown[df_dropdown.CTRY == country]["STATE"].fillna('N/A').sort_values().unique()
-            )
-    state = st.selectbox(
-        'State',
-        list_states,
-        on_change=set_to_false).replace('N/A', '')
-
 if type_of_file == "historical":
     lat_long = st.checkbox('I prefer to enter the longitude and latitude')
 
@@ -126,6 +105,8 @@ if type_of_file == "historical":
                                 step=1.0,
                                 on_change=set_to_false)
         ws = None
+        state = None
+        country = None
 
     if not lat_long:
         lat = np.nan
@@ -139,21 +120,42 @@ else:
     start_year = 2010
     end_year = 2020
 
-if state == '':
-    state = None
-
-if state == None:
-    list_ws = df_dropdown[(df_dropdown.CTRY == country)][
-    'STATION NAME'
-    ].sort_values().unique()
-else:
-    list_ws = df_dropdown[
-        (df_dropdown.CTRY == country) & (df_dropdown.STATE == state)
-        ][
-    'STATION NAME'
-    ].sort_values().unique()
-
 if not lat_long:
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        country = st.selectbox(
+            'Country code',
+            (df_dropdown["CTRY"].fillna('N/A').sort_values().unique()),
+            on_change=set_to_false).replace('N/A', '')
+    with col2:
+        if country == '':
+            list_states = ['N/A']
+        else :
+            list_states = (
+                df_dropdown[df_dropdown.CTRY == country]["STATE"].fillna('N/A').sort_values().unique()
+                )
+        state = st.selectbox(
+            'State',
+            list_states,
+            on_change=set_to_false).replace('N/A', '')
+
+    if state == '':
+        state = None
+
+    if state == None:
+        list_ws = df_dropdown[(df_dropdown.CTRY == country)][
+        'STATION NAME'
+        ].sort_values().unique()
+    else:
+        list_ws = df_dropdown[
+            (df_dropdown.CTRY == country) & (df_dropdown.STATE == state)
+            ][
+        'STATION NAME'
+        ].sort_values().unique()
+
+
     ws = st.selectbox(
             'Weather Station',
             list_ws,
@@ -198,10 +200,6 @@ args = {
 	"longitude": long
 }
 
-#hourly = st.checkbox('Hourly', value=True)
-#daily = st.checkbox('Daily', value=True)
-#monthly = st.checkbox('Monthly', value=True)
-#form = st.form("test_form")
 st.markdown(
         "### Download"
     )
@@ -220,18 +218,23 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
     st.markdown(
         "### Save on your computer"
     )
-    freq = st.selectbox(
-                'Select the frequency of the data',
-                ['Hourly', 'Daily', 'Monthly']
-                )
 
-    if freq == 'Hourly':
-        df= st.session_state["station"].o.df_hourly
-    elif freq == 'Daily':
-        df = st.session_state["station"].o.df_daily
-    else :
-        df = st.session_state["station"].o.df_monthly
+    if type_of_file == "historical": 
+        freq = st.selectbox(
+                    'Select the frequency of the data',
+                    ['Hourly', 'Daily', 'Monthly']
+                    )
+
+        if freq == 'Hourly':
+            df = st.session_state["station"].o.df_hourly
+        elif freq == 'Daily':
+            df = st.session_state["station"].o.df_daily
+        else :
+            df = st.session_state["station"].o.df_monthly
     
+    else:
+        df= st.session_state["station"].o.df_hourly
+        freq = 'hourly'
 
     @st.cache
     def convert_df(df):

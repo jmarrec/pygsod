@@ -1,5 +1,4 @@
-
-'''
+"""
 
 Author: Julien Marrec， Hang Li
 Date: 2020-06-18
@@ -13,7 +12,7 @@ Parameters can be added but not currently used in EnergyPlus calculations:
 1. Ceiling height
 2. Visibility
 
-'''
+"""
 import os
 import datetime
 import pandas as pd
@@ -21,14 +20,18 @@ import numpy as np
 
 from gsodpy.noaadata import NOAAData
 from gsodpy.constants import WEATHER_DIR
-from gsodpy.utils import (DataType, is_list_like, get_valid_year,
-                          sanitize_usaf_wban)
+from gsodpy.utils import (
+    DataType,
+    is_list_like,
+    get_valid_year,
+    sanitize_usaf_wban,
+)
 
 
 def parse_rh(data):
-    if 'RH1' in data:
-        loc = data.find('RH3')
-        rh = int(data[loc + 7:loc + 10])
+    if "RH1" in data:
+        loc = data.find("RH3")
+        rh = int(data[loc + 7 : loc + 10])
         if rh == 999:
             return np.nan  # if using 999 therew will be issue in interpolating
         else:
@@ -68,9 +71,9 @@ def parse_opaque_sky_cover(data):
 
 
 def parse_zenith(data):
-    if 'GQ1' in data:
-        loc = data.find('GQ1')
-        zenith_angle = int(data[loc + 7:loc + 11])
+    if "GQ1" in data:
+        loc = data.find("GQ1")
+        zenith_angle = int(data[loc + 7 : loc + 11])
         if zenith_angle == 9999:
             return np.nan
         else:
@@ -80,9 +83,9 @@ def parse_zenith(data):
 
 
 def parse_azimuth(data):
-    if 'GQ1' in data:
-        loc = data.find('GQ1')
-        azimuth_angle = int(data[loc + 12:loc + 16])
+    if "GQ1" in data:
+        loc = data.find("GQ1")
+        azimuth_angle = int(data[loc + 12 : loc + 16])
         if azimuth_angle == 9999:
             return np.nan
         else:
@@ -144,88 +147,103 @@ def parse_ish_file(isd_full, create_excel_file=True):
 
     oppath_year = list(zip(op_path, years))
 
-    colspecs = [(4, 10),
-                (10, 15),
-                (15, 19),
-                (19, 21),
-                (21, 23),
-                (23, 27),
-                (87, 92),
-                (92, 93),
-                (93, 98),
-                (98, 99),
-                (99, 104),
-                (65, 69),
-                (60, 63),
-                (105, -1)]
+    colspecs = [
+        (4, 10),
+        (10, 15),
+        (15, 19),
+        (19, 21),
+        (21, 23),
+        (23, 27),
+        (87, 92),
+        (92, 93),
+        (93, 98),
+        (98, 99),
+        (99, 104),
+        (65, 69),
+        (60, 63),
+        (105, -1),
+    ]
     # Define column names
-    names = ['USAF',
-             'WBAN',
-             'YEAR',
-             'MONTH',
-             'DAY',
-             'TIME',
-             'TEMP_C',
-             'TEMP_Count',
-             'DEWP_C',
-             'DEWP_Count',
-             'SLP_hPa',
-             'WIND_SPEED',
-             'WIND_DIRECTION',
-             'ADD_DATA']
+    names = [
+        "USAF",
+        "WBAN",
+        "YEAR",
+        "MONTH",
+        "DAY",
+        "TIME",
+        "TEMP_C",
+        "TEMP_Count",
+        "DEWP_C",
+        "DEWP_Count",
+        "SLP_hPa",
+        "WIND_SPEED",
+        "WIND_DIRECTION",
+        "ADD_DATA",
+    ]
     # Force dtypes
-    dtypes = {'DAY': np.int32,
-              'TIME': np.int32,
-              'DEWP_C': np.float64,
-              'DEWP_Count': np.int32,
-              'MONTH': np.int32,
-              'SLP_hPa': np.float64,
-              'TEMP_C': np.float64,
-              'TEMP_Count': np.int32,
-              'USAF': np.int32,
-              'WBAN': np.int32,
-              'YEAR': np.int32,
-              'WIND_SPEED': np.float64,
-              'WIND_DIRECTION': np.int32}
+    dtypes = {
+        "DAY": np.int32,
+        "TIME": np.int32,
+        "DEWP_C": np.float64,
+        "DEWP_Count": np.int32,
+        "MONTH": np.int32,
+        "SLP_hPa": np.float64,
+        "TEMP_C": np.float64,
+        "TEMP_Count": np.int32,
+        "USAF": np.int32,
+        "WBAN": np.int32,
+        "YEAR": np.int32,
+        "WIND_SPEED": np.float64,
+        "WIND_DIRECTION": np.int32,
+    }
     # Define NA values per column, based on gsod format description
-    na_values = {'TEMP_C': 9999,
-                 'DEWP_C': 9999,
-                 'SLP_hPa': 99999,
-                 'STP_mbar': 9999.9,
-                 'VISIB_mi': 999.9,
-                 'WDSP_kn': 999.9,
-                 'MXSPD_kn': 999.9,
-                 'GUST_kn': 999.9,
-                 'MAX_F': 9999.9,
-                 'MIN_F': 9999.9,
-                 'PRCP_in': 99.9,
-                 'SNDP_in': 999.9,
-                 'WIND_SPEED': 9999,
-                 'WIND_DIRECTION': 999}
+    na_values = {
+        "TEMP_C": 9999,
+        "DEWP_C": 9999,
+        "SLP_hPa": 99999,
+        "STP_mbar": 9999.9,
+        "VISIB_mi": 999.9,
+        "WDSP_kn": 999.9,
+        "MXSPD_kn": 999.9,
+        "GUST_kn": 999.9,
+        "MAX_F": 9999.9,
+        "MIN_F": 9999.9,
+        "PRCP_in": 99.9,
+        "SNDP_in": 999.9,
+        "WIND_SPEED": 9999,
+        "WIND_DIRECTION": 999,
+    }
 
     for p, year in oppath_year:
-        i_op = pd.read_fwf(p, index_col='Date',
-                           parse_dates={
-                               'Date': ['YEAR', 'MONTH', 'DAY', 'TIME']},
-                           colspecs=colspecs, header=None, names=names,
-                           skiprows=1,
-                           na_values=na_values, dtypes=dtypes)
+        i_op = pd.read_fwf(
+            p,
+            index_col="Date",
+            parse_dates={"Date": ["YEAR", "MONTH", "DAY", "TIME"]},
+            colspecs=colspecs,
+            header=None,
+            names=names,
+            skiprows=1,
+            na_values=na_values,
+            dtypes=dtypes,
+        )
 
-        i_op['TEMP_C'] = i_op['TEMP_C'] / 10  # scaling factor: 10
-        i_op['TEMP_F'] = i_op['TEMP_C'] * 1.8 + 32  # calculate C to F
-        i_op['DEWP_C'] = i_op['DEWP_C'] / 10  # scaling factor: 10
-        i_op['SLP_hPa'] = i_op['SLP_hPa'] / 10  # scaling factor: 10
-        i_op['WIND_SPEED'] = i_op['WIND_SPEED'] / 10  # scaling factor: 10
+        i_op["TEMP_C"] = i_op["TEMP_C"] / 10  # scaling factor: 10
+        i_op["TEMP_F"] = i_op["TEMP_C"] * 1.8 + 32  # calculate C to F
+        i_op["DEWP_C"] = i_op["DEWP_C"] / 10  # scaling factor: 10
+        i_op["SLP_hPa"] = i_op["SLP_hPa"] / 10  # scaling factor: 10
+        i_op["WIND_SPEED"] = i_op["WIND_SPEED"] / 10  # scaling factor: 10
 
-        i_op['SLP_Pa'] = i_op['SLP_hPa'] * 100
+        i_op["SLP_Pa"] = i_op["SLP_hPa"] * 100
 
         # ADDITIONAL DATA SECTION
-        i_op['RELATIVE_HUMIDITY_PERCENTAGE'] = i_op['ADD_DATA'].apply(parse_rh)
-        i_op['TOTAL_SKY_COVER'] = i_op['ADD_DATA'].apply(parse_total_sky_cover)
-        i_op['OPAQUE_SKY_COVER'] = i_op[
-            'ADD_DATA'].apply(parse_opaque_sky_cover)
-        i_op['AZIMUTH_ANGLE'] = i_op['ADD_DATA'].apply(parse_azimuth)
-        i_op['ZENITH_ANGLE'] = i_op['ADD_DATA'].apply(parse_zenith)
+        i_op["ADD_DATA"] = i_op["ADD_DATA"].fillna("")
+        i_op["RELATIVE_HUMIDITY_PERCENTAGE"] = i_op["ADD_DATA"].apply(parse_rh)
+        i_op["TOTAL_SKY_COVER"] = i_op["ADD_DATA"].apply(parse_total_sky_cover)
+        i_op["OPAQUE_SKY_COVER"] = i_op["ADD_DATA"].apply(
+            parse_opaque_sky_cover
+        )
+        i_op["AZIMUTH_ANGLE"] = i_op["ADD_DATA"].apply(parse_azimuth)
+        i_op["ZENITH_ANGLE"] = i_op["ADD_DATA"].apply(parse_zenith)
 
         # filter the only data for the year we need
         i_op = i_op[i_op.index.year == year]
@@ -240,7 +258,7 @@ def parse_ish_file(isd_full, create_excel_file=True):
         # Format USAF and WBAN as fixed-length numbers (strings)
         op.USAF = op.USAF.map(str).str.zfill(6)
         op.WBAN = op.WBAN.map(str).str.zfill(5)
-        op['StationID'] = op.USAF + "-" + op.WBAN
+        op["StationID"] = op.USAF + "-" + op.WBAN
     else:
         op = pd.DataFrame()
 
@@ -284,25 +302,30 @@ def parse_ish_file(isd_full, create_excel_file=True):
     # op = op[col_order]
     return op
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     isd_full = NOAAData(data_type=DataType.isd_full)
 
     # This is what's run
-    start_year = get_valid_year("Enter start year in YYYY format."
-                                "Leave blank for current year "
-                                "({}):\n".format(datetime.date.today().year))
+    start_year = get_valid_year(
+        "Enter start year in YYYY format."
+        "Leave blank for current year "
+        "({}):\n".format(datetime.date.today().year)
+    )
 
-    end_year = get_valid_year("Enter end year in YYYY format."
-                              "Leave blank for current year "
-                              "({}):\n".format(datetime.date.today().year))
+    end_year = get_valid_year(
+        "Enter end year in YYYY format."
+        "Leave blank for current year "
+        "({}):\n".format(datetime.date.today().year)
+    )
     # Download the data
     isd_full.set_years_range(start_year=start_year, end_year=end_year)
 
     # cleanup empty files, extract the gzip files, and delete them afterwards
     isd_full.get_stations_from_file(
-        weather_stations_file=os.path.join(WEATHER_DIR,
-                                           'weather_stations.txt'))
+        weather_stations_file=os.path.join(WEATHER_DIR, "weather_stations.txt")
+    )
 
     print("Starting retrieving!")
     isd_full.get_all_data()

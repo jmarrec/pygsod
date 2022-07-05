@@ -1,19 +1,20 @@
-import os
+from pathlib import Path
 
 # Global constants
 
 # Where this py file is located.
-GSOD_DIR = os.path.dirname(os.path.realpath(__file__))
+GSOD_DIR = Path(__file__).resolve().parent
 
 # Create support and weather_files directories if don't exist
-SUPPORT_DIR = os.path.realpath(os.path.join(GSOD_DIR, '../support/'))
-if not os.path.exists(SUPPORT_DIR):
-    os.makedirs(SUPPORT_DIR)
+SUPPORT_DIR = GSOD_DIR / "../support"
+if not SUPPORT_DIR.exists():
+    SUPPORT_DIR.mkdir(parents=True)
 
-WEATHER_DIR = os.path.realpath(os.path.join(GSOD_DIR, '../weather_files/'))
-if not os.path.exists(WEATHER_DIR):
-    os.makedirs(WEATHER_DIR)
+WEATHER_DIR = GSOD_DIR / "../weather_files"
+if not WEATHER_DIR.exists():
+    WEATHER_DIR.mkdir(parents=True)
 
-RESULT_DIR = os.path.realpath(os.path.join(GSOD_DIR, '../results/'))
-if not os.path.exists(RESULT_DIR):
-    os.makedirs(RESULT_DIR)
+RESULT_DIR = GSOD_DIR / "../results"
+if not RESULT_DIR.exists():
+    RESULT_DIR.mkdir(parents=True)
+

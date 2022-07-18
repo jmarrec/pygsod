@@ -283,7 +283,6 @@ class NOAAData:
 
             raise ValueError(msg)
 
-        # with progressbar.ProgressBar(max_value=max_value) as bar:
         i = 0
         for year in tqdm(self.years):
             for usaf_wban in self.stations:

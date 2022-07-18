@@ -84,8 +84,6 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['pandas', 'pathlib',
-                      # NOT progressbar, mind the 2!
-                      'progressbar2',
                       'pyepw',
                       'bs4',
                       'requests',

@@ -9,7 +9,7 @@ from gsodpy.output import GetOneStation
 
 # TODO: isd-history.csv doesn't exist until it's actually downloaded
 ISDHISTORY_PATH = SUPPORT_DIR / "isd-history.csv"
-EPHISTORY_PATH = Path(__file__).parent / "ep_weather_stations.xlsx"
+EPHISTORY_PATH = SUPPORT_DIR / "ep_weather_stations.xlsx"
 
 
 def read_isd_history():

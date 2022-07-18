@@ -13,7 +13,6 @@ import re
 
 from tqdm import tqdm
 
-# import progressbar
 
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
 from gsodpy.utils import is_list_like, ReturnCode, DataType, sanitize_usaf_wban

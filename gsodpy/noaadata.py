@@ -179,13 +179,9 @@ class NOAAData:
             stations (list of str): sanitized
 
         """
-        isd_history_file_name = os.path.join(SUPPORT_DIR, "isd-history.csv")
-        df = pd.read_csv(isd_history_file_name)
-        print("Station name", station_name)
         if (country is not None) and (station_name is not None):
 
-            isd_history_file_name = os.path.join(SUPPORT_DIR, 'isd-history.csv')
-            df = pd.read_csv(isd_history_file_name)
+            df = self.isd.df
 
             if state is None:
                 df_sub = df[
@@ -265,7 +261,6 @@ class NOAAData:
             from ftplib import FTP
             import os
             import pandas as pd
-
         """
 
         # c = done; r = doesn't exist; o = outdated, stopped before

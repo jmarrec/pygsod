@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from gsodpy.constants import SUPPORT_DIR
 from gsodpy.output import GetOneStation
 from gsodpy.isdhistory import ISDHistory
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
+
 
 def read_isd_history():
     # This will download or update the isd-history.csv as needed
@@ -53,6 +53,16 @@ type_of_output = st.selectbox(
     "Select the output file format", ("CSV", "XLSX"), on_change=set_to_false
 )
 
+
+# Initial the variables / args
+lat_long = False
+lat = np.nan
+long = np.nan
+ws = None
+state = None
+country = None
+start_year = 2010
+end_year = 2020
 
 if type_of_file == "historical":
 
@@ -110,21 +120,6 @@ if type_of_file == "historical":
                 step=1.0,
                 on_change=set_to_false,
             )
-        ws = None
-        state = None
-        country = None
-
-    if not lat_long:
-        lat = np.nan
-        long = np.nan
-
-
-else:
-    lat_long = False
-    lat = np.nan
-    long = np.nan
-    start_year = 2010
-    end_year = 2020
 
 if not lat_long:
 
@@ -153,7 +148,7 @@ if not lat_long:
     if state == "":
         state = None
 
-    if state == None:
+    if state is None:
         list_ws = (
             df_dropdown[(df_dropdown.CTRY == country)]["STATION NAME"]
             .sort_values()
@@ -225,7 +220,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
 
     if type_of_file == "historical":
         freq = st.selectbox(
-            "Select the frequency of the data", ["Hourly", "Daily", "Monthly"]
+            "Select the frequency of the data", ["Hourly", "Daily", "Monthly"],
         )
 
         if freq == "Hourly":
@@ -234,7 +229,6 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             df = st.session_state["station"].df_daily
         else:
             df = st.session_state["station"].df_monthly
-
     else:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"
@@ -247,13 +241,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
     st.download_button(
         label="Save Temperature Files",
         data=convert_df(df),
-        file_name=(
-            st.session_state["station"].o.op_file_name
-            + "-"
-            + freq.lower()
-            + "."
-            + type_of_output.lower()
-        ),
+        file_name=f"{st.session_state['station'].filenamestub}-{freq.lower()}.{type_of_output.lower()}"
     )
 
 

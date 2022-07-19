@@ -6,7 +6,6 @@ from gsodpy.tmy_download import TMY
 from pathlib import Path
 
 from gsodpy.constants import WEATHER_DIR, RESULT_DIR
-from pathlib import Path
 import pandas as pd
 from pyepw.epw import EPW
 import datetime
@@ -31,6 +30,18 @@ class GetOneStation(object):
 
         self.start_year = args["start_year"]
         self.end_year = args["end_year"]
+
+        if (self.country is None or self.station_name is None) and (self.latitude is None or self.latitude is None):
+            raise ValueError("You must provide at least station_name and country, or latitude and lontigude")
+
+        if self.country is not None:
+            self.filenamestub = f"{self.country}-{self.station_name}"
+        else:
+            self.filenamestub = f"{self.latitude}-{self.longitude}"
+        if self.type_of_file == "historical":
+            self.filenamestub += f"-Historical-{self.start_year}-{self.end_year}"
+        else:
+            self.filenamestub += f"-TMY3"
 
     def run(self):
         self.list_files = self.get_data()

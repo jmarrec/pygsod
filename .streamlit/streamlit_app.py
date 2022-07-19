@@ -5,11 +5,10 @@ import pandas as pd
 import streamlit as st
 
 from gsodpy.constants import SUPPORT_DIR
-from gsodpy.output import GetOneStation, ISDHISTORY_PATH
+from gsodpy.output import GetOneStation
 from gsodpy.isdhistory import ISDHistory
 
-EPHISTORY_PATH = SUPPORT_DIR / "ep_weather_stations.xlsx"
-
+EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 
 def read_isd_history():
     # This will download or update the isd-history.csv as needed

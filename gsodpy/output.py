@@ -12,10 +12,22 @@ import datetime
 
 
 class GetOneStation(object):
-    """docstring for GetOneStation."""
+    """Call the API to download the data for the selected weather station
+    and save the data in the selected format"""
 
     def __init__(self, args):
-
+        '''Input : - args (dict) with the keys:
+        - type_of_file (str) : "historical" or "TMY"
+        - type_of_ouptut (str) : "CSV", "JSON", "EPW"
+        - hdd_threshold (int)
+        - cdd_threshold (int)
+        - country (str)
+        - state (str)
+        - station_name (str)
+        - latitude (str or None)
+        - longitude (str or None)
+        - start_year (datetime)
+        - end_year (datetime)'''
         self.type_of_file = args["type_of_file"]
         self.type_output = args["type_of_output"]
         self.hdd_threshold = args["hdd_threshold"]

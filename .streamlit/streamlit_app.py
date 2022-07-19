@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import streamlit as st
+from io import BytesIO
 
 from gsodpy.output import GetOneStation
 from gsodpy.isdhistory import ISDHistory
@@ -233,14 +234,27 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"
 
+
     @st.cache
-    def convert_df(df):
-        # IMPORTANT: Cache the conversion to prevent computation on every rerun
-        return df.to_csv()
+    def convert_df(df, type_of_output):
+         # IMPORTANT: Cache the conversion to prevent computation on every rerun
+        if type_of_output == 'CSV':
+            return df.to_csv()
+        elif type_of_output == 'XLSX':
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='xlsxwriter')
+            df.to_excel(writer, index=False, sheet_name='Sheet1')
+            workbook = writer.book
+            worksheet = writer.sheets['Sheet1']
+            format1 = workbook.add_format({'num_format': '0.00'}) 
+            worksheet.set_column('A:A', None, format1)  
+            writer.save()
+            return output.getvalue()
+
 
     st.download_button(
         label="Save Temperature Files",
-        data=convert_df(df),
+        data=convert_df(df, type_of_output),
         file_name=f"{st.session_state['station'].filenamestub}-{freq.lower()}.{type_of_output.lower()}"
     )
 

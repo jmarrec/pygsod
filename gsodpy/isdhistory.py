@@ -6,10 +6,7 @@ import pandas as pd
 # For the Haversine Formula
 from math import cos, asin, sqrt
 
-from gsodpy.constants import SUPPORT_DIR
-
-ISDHISTORY_PATH = os.path.join(SUPPORT_DIR, "isd-history.csv")
-
+from gsodpy.constants import ISDHISTORY_PATH
 
 class ISDHistory:
     """

@@ -18,3 +18,4 @@ RESULT_DIR = GSOD_DIR / "../results"
 if not RESULT_DIR.exists():
     RESULT_DIR.mkdir(parents=True)
 
+ISDHISTORY_PATH = SUPPORT_DIR / "isd-history.csv"

@@ -5,16 +5,17 @@ import pandas as pd
 import streamlit as st
 
 from gsodpy.constants import SUPPORT_DIR
-from gsodpy.output import GetOneStation
+from gsodpy.output import GetOneStation, ISDHISTORY_PATH
+from gsodpy.isdhistory import ISDHistory
 
-# TODO: isd-history.csv doesn't exist until it's actually downloaded
-ISDHISTORY_PATH = SUPPORT_DIR / "isd-history.csv"
 EPHISTORY_PATH = SUPPORT_DIR / "ep_weather_stations.xlsx"
 
 
 def read_isd_history():
-    df_dropdown = pd.read_csv(ISDHISTORY_PATH, sep=",", parse_dates=[9, 10])
-    return df_dropdown
+    # This will download or update the isd-history.csv as needed
+    isd = ISDHistory()
+
+    return isd.df
 
 
 def read_ep_ws():

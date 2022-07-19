@@ -1,5 +1,6 @@
 requests
 tqdm
 pandas
+openpyxl
 pyepw
 git+https://github.com/jmarrec/gsodpy/@update-TMY#egg=gsodpy

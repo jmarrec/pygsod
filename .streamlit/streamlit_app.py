@@ -211,7 +211,7 @@ submit = st.button("Download from the API", on_click=change_status)
 if submit:
     st.spinner("Downloading...")
     st.write("Downloading... Please wait")
-    st.session_state["station"] = GetOneStation(args)
+    st.session_state["station"] = GetOneStation(**args)
     st.session_state["station"].get_one_dataframe()
     st.balloons()
 
@@ -248,7 +248,6 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             worksheet = writer.sheets['Sheet1']
             format1 = workbook.add_format({'num_format': '0.00'}) 
             worksheet.set_column('A:A', None, format1)  
-            writer.save()
             return output.getvalue()
 
 

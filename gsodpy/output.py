@@ -15,8 +15,11 @@ class GetOneStation(object):
     """Call the API to download the data for the selected weather station
     and save the data in the selected format"""
 
-    def __init__(self, args):
-        '''Input : - args (dict) with the keys:
+    def __init__(self, type_of_file, type_of_output,
+                hdd_threshold, cdd_threshold, country, state,
+                station_name, latitude, longitude, start_year,
+                end_year):
+        '''Inputs : 
         - type_of_file (str) : "historical" or "TMY"
         - type_of_ouptut (str) : "CSV", "JSON", "EPW"
         - hdd_threshold (int)
@@ -28,20 +31,20 @@ class GetOneStation(object):
         - longitude (str or None)
         - start_year (datetime)
         - end_year (datetime)'''
-        self.type_of_file = args["type_of_file"]
-        self.type_output = args["type_of_output"]
-        self.hdd_threshold = args["hdd_threshold"]
-        self.cdd_threshold = args["cdd_threshold"]
+        self.type_of_file = type_of_file
+        self.type_output = type_of_output
+        self.hdd_threshold = hdd_threshold
+        self.cdd_threshold = cdd_threshold
 
-        self.country = args["country"]
-        self.state = args["state"]
-        self.station_name = args["station_name"]
+        self.country = country
+        self.state = state
+        self.station_name = station_name
 
-        self.latitude = args["latitude"]
-        self.longitude = args["longitude"]
+        self.latitude = latitude
+        self.longitude = longitude
 
-        self.start_year = args["start_year"]
-        self.end_year = args["end_year"]
+        self.start_year = start_year
+        self.end_year = end_year
 
         if (self.country is None or self.station_name is None) and (self.latitude is None or self.latitude is None):
             raise ValueError("You must provide at least station_name and country, or latitude and lontigude")

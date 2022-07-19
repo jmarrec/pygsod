@@ -1,5 +1,10 @@
 # Weather Data and Weather Normalization
 
+## Caveat
+
+**This is a work in progress: The documentation is outdated and lacking, test coverage is low.** But I decided open sourcing was better than not anyways.
+Use at your own risk.
+
 ## What is this repository for? ###
 
 ### Python script to download weather data
@@ -29,10 +34,10 @@
     * Import the resulting weather data (on hidden tab `Data`)
 
 ![Excel Macro Button](doc/images/excel_macro_button.png)
-    
+
 ### Adding a new station ###
 
-* Find the station you want to add in `isd-history.csv`. Check the BEGIN/END column to make sure it has data for the period of time you're interested in (some have stopped recording in the early 1900s...) 
+* Find the station you want to add in `isd-history.csv`. Check the BEGIN/END column to make sure it has data for the period of time you're interested in (some have stopped recording in the early 1900s...)
 * In `Regression_tool.xlsm`, go to hidden tab `Data` and add a new column to the right following the same pattern as the rest: basically fill rows [1-12] (only [2-8] need data, rest is formulas) for this new column using info from the isd-history.csv
 * Downloading weather data for multiple years
     * There is also a convenience method in `gsodmain.py` called `download_GSOD_multiple_years()` that will download data for all years between 2003 (included) and the current year.
@@ -44,14 +49,14 @@
 ```
 from gsodmain import *
 download_GSOD_multiple_years()
-``` 
+```
     * This will download data from 2003 until now
 
 * Go back to `Regression_tool.xlsm`
 * Open the VB Editor (ALT + F11). Navigate to module "Import_initial", locate `ImportAllWeather_Initial`
     * Change the "USAFWBAN" in the macro to match your new station (locate the portion below)
     * Run the macro
-    
+
 ```
 ' ##########################################################
 
@@ -62,7 +67,7 @@ USAFWBAN = "725020-14734"
 ' ##########################################################
 ```
 
-    
+
 
 ![Excel Macro Import Initial Weather](doc/images/add_station_initial_import.png)
 
@@ -74,8 +79,3 @@ There's also a `Cleaning` module if you need it - when you have missing data:
         * **If you massage it manually, set the cell's background fill to pure red (RGB = (255,0,0))**
     *  You can then run `CountMissing` that will put the total number of "massaged" datapoint in row 11
     * (See Altantic City, rows 3414 and following to see an example)
-
-
-### Who do I talk to? ###
-
-* Author: Julien Marrec

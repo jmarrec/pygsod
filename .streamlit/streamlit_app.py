@@ -216,7 +216,7 @@ if submit:
     st.spinner("Downloading...")
     st.write("Downloading... Please wait")
     st.session_state["station"] = GetOneStation(args)
-    st.session_state["station"].run()
+    st.session_state["station"].get_one_dataframe()
     st.balloons()
 
 if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
@@ -229,15 +229,15 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         )
 
         if freq == "Hourly":
-            df = st.session_state["station"].o.df_hourly
+            df = st.session_state["station"].df_hourly
         elif freq == "Daily":
-            df = st.session_state["station"].o.df_daily
+            df = st.session_state["station"].df_daily
         else:
-            df = st.session_state["station"].o.df_monthly
+            df = st.session_state["station"].df_monthly
 
     else:
-        df = st.session_state["station"].o.df_hourly
-        freq = "hourly"
+        df = st.session_state["station"].df_hourly
+        freq = "Hourly"
 
     @st.cache
     def convert_df(df):

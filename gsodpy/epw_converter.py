@@ -1,5 +1,5 @@
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR, RESULT_DIR
-import os
+from pathlib import Path
 from pyepw.epw import EPW
 from gsodpy.ish_full import parse_ish_file
 import pandas as pd
@@ -53,97 +53,112 @@ def epw_convert(df, op_file_name):
     """Convert ish_full into EPW file"""
 
     epw = EPW()
-    epw_file = os.path.join(SUPPORT_DIR, "EPW-template-file.epw")
+    epw_file = SUPPORT_DIR / "EPW-template-file.epw"
     epw.read(epw_file)
 
+    current_year = datetime.datetime.now().year
+
+    if df.index[0].year == current_year:
+        length = len(df.index)
+    else :
+        length = len(epw.weatherdata)
+    
     for i, wd in enumerate(epw.weatherdata):
 
-        wd.year = df.index[i].year
+        if i < length:
 
-        #    Temperature
-        # ----------------
-        value_temp = df["TEMP_C"][i]
+            wd.year = df.index[i].year
 
-        if value_temp >= 70:
-            # condition of EPW package, value need to be smaller 70.0
-            # for field dry_bulb_temperature
-            value_temp = 69
+            #    Temperature
+            # ----------------
+            value_temp = df["TEMP_C"][i]
 
-        elif value_temp <= -70:
-            value_temp = -69
+            if value_temp >= 70:
+                # condition of EPW package, value need to be smaller 70.0
+                # for field dry_bulb_temperature
+                value_temp = 69
 
-        wd.dry_bulb_temperature = value_temp
+            elif value_temp <= -70:
+                value_temp = -69
 
-        #        DEWP
-        # ----------------
+            wd.dry_bulb_temperature = value_temp
 
-        value_dewp = df["DEWP_C"][i]
+            #        DEWP
+            # ----------------
 
-        if value_dewp >= 70:
-            # condition of EPW package, value need to be smaller 70.0
-            # for field dew_point_temperature
-            value_dewp = 69
+            value_dewp = df["DEWP_C"][i]
 
-        elif value_dewp <= -70:
-            value_dewp = -69
+            if value_dewp >= 70:
+                # condition of EPW package, value need to be smaller 70.0
+                # for field dew_point_temperature
+                value_dewp = 69
 
-        wd.dew_point_temperature = value_dewp
+            elif value_dewp <= -70:
+                value_dewp = -69
 
-        #      Pressure
-        # ----------------
+            wd.dew_point_temperature = value_dewp
 
-        value_pressure = df["SLP_Pa"][i]
-        if value_pressure >= 120000:
-            # condition of EPW package, value need to be smaller 120000 for
-            # field atmosphere pressure
-            value_pressure = 119999
-        elif value_pressure <= 31000:
-            value_pressure = 31001
+            #      Pressure
+            # ----------------
 
-        wd.atmospheric_station_pressure = value_pressure
+            value_pressure = df["SLP_Pa"][i]
+            if value_pressure >= 120000:
+                # condition of EPW package, value need to be smaller 120000 for
+                # field atmosphere pressure
+                value_pressure = 119999
+            elif value_pressure <= 31000:
+                value_pressure = 31001
 
-        #      Wind Speed
-        # ----------------
+            wd.atmospheric_station_pressure = value_pressure
 
-        value_windspeed = df["WIND_SPEED"][i]
-        if value_windspeed >= 40:
-            value_windspeed = 39.9  # value need to be smaller 40.0
-        wd.wind_speed = value_windspeed
+            #      Wind Speed
+            # ----------------
 
-        #      Wind Direction
-        # ----------------
-        value_winddirection = df["WIND_DIRECTION"][i]
-        wd.wind_direction = value_winddirection
+            value_windspeed = df["WIND_SPEED"][i]
+            if value_windspeed >= 40:
+                value_windspeed = 39.9  # value need to be smaller 40.0
+            wd.wind_speed = value_windspeed
 
-        # 	   Relative Humidity Percentage
-        # ----------------
-        value_rh = df["RELATIVE_HUMIDITY_PERCENTAGE"][i]
-        wd.relative_humidity = value_rh
+            #      Wind Direction
+            # ----------------
+            value_winddirection = df["WIND_DIRECTION"][i]
+            wd.wind_direction = value_winddirection
 
-        # 	   Total Sky Cover
-        # ----------------
-        value_total_sky_cover = df["TOTAL_SKY_COVER"][i] / 2
-        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
-        # scaling
-        wd.total_sky_cover = value_total_sky_cover
+            # 	   Relative Humidity Percentage
+            # ----------------
+            value_rh = df["RELATIVE_HUMIDITY_PERCENTAGE"][i]
+            if np.isnan(value_rh):
+                value_rh = 0
+            wd.relative_humidity = value_rh
 
-        # 	   Opaque Sky Cover
-        # ----------------
-        value_opaque_sky_cover = df["OPAQUE_SKY_COVER"][i] / 2
-        # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
-        # scaling
-        wd.opaque_sky_cover = value_opaque_sky_cover
+            # 	   Total Sky Cover
+            # ----------------
+            value_total_sky_cover = df["TOTAL_SKY_COVER"][i] / 2
+            # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
+            # scaling
+            wd.total_sky_cover = value_total_sky_cover
 
-    epw_file_new = os.path.join(RESULT_DIR, op_file_name + ".epw")
+            # 	   Opaque Sky Cover
+            # ----------------
+            value_opaque_sky_cover = df["OPAQUE_SKY_COVER"][i] / 2
+            # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
+            # scaling
+            wd.opaque_sky_cover = value_opaque_sky_cover
+
+    epw_file_new = RESULT_DIR / (op_file_name + ".epw")
     epw.save(epw_file_new)
 
 
-if __name__ == "__main__":
+def convert_all_isd_full_files():
+    '''Runs epw_convert for all the files in the
+    isd_full folder'''
 
-    for root, dirs, files in os.walk(WEATHER_DIR + "/isd_full"):
-        for file in files:
-            if file.endswith("xlsx"):
-                df_path = os.path.join(root, file)
-                df = pd.read_excel(df_path, index_col=0)
-                df = clean_df(df)
-                epw_convert(df, file)
+    for dirs in (WEATHER_DIR / "isd_full").iterdir():
+        print(dirs)
+        for file_path in dirs.iterdir():
+            file_name = file_path.name
+            if file_name.endswith("xlsx"):
+
+                df = pd.read_excel(file_path, index_col=0)
+                df = clean_df(df, file_name)
+                epw_convert(df, file_name)

@@ -1,0 +1,5 @@
+requests
+tqdm
+pandas
+pyepw
+git+https://github.com/jmarrec/gsodpy/@update-TMY#egg=gsodpy

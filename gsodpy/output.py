@@ -59,7 +59,7 @@ class GetOneStation(object):
             self.filenamestub += f"-TMY3"
 
     def run(self):
-        self.list_files = self.get_data()
+        self.list_files = self._get_data()
 
         # output files
         for file in self.list_files:
@@ -70,7 +70,7 @@ class GetOneStation(object):
 
     def get_one_dataframe(self):
 
-        self.list_files = self.get_data()
+        self.list_files = self._get_data()
 
         df_hourly = pd.DataFrame()
         df_daily = pd.DataFrame()
@@ -89,10 +89,10 @@ class GetOneStation(object):
         self.df_daily = df_daily
         self.df_monthly = df_monthly
 
-    def get_data(self):
+    def _get_data(self):
         if self.type_of_file == "historical":
             # download isd_full
-            list_files = self.download_historical_data()
+            list_files = self._download_historical_data()
 
         elif self.type_of_file == "TMY":
             # download weather data from EP+ website
@@ -108,7 +108,7 @@ class GetOneStation(object):
 
         return list_files
 
-    def download_historical_data(self):
+    def _download_historical_data(self):
 
         self.isd_full = NOAAData(data_type=DataType.isd_full)
         self.isd_full.set_years_range(

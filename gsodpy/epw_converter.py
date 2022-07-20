@@ -1,3 +1,5 @@
+"""Convert to an EPW weather file."""
+
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR, RESULT_DIR
 from pathlib import Path
 from pyepw.epw import EPW
@@ -62,7 +64,7 @@ def epw_convert(df, op_file_name):
         length = len(df.index)
     else :
         length = len(epw.weatherdata)
-    
+
     for i, wd in enumerate(epw.weatherdata):
 
         if i < length:
@@ -149,17 +151,23 @@ def epw_convert(df, op_file_name):
     epw.save(epw_file_new)
 
 
-def convert_all_isd_full_files(directory=None):
+def convert_all_isd_full_files(directory: Path=None):
     '''Runs epw_convert for all the files in the
     isd_full folder
-    
-    Arg : 
+
+    Arg :
     - directory (Path): should be the same type of folder than
     isd_full, e.g one folder for each year and in these folders
      you have weather file in .xlsx format'''
 
     if directory is None:
         directory = WEATHER_DIR / "isd_full"
+    elif not isinstance(directory, Path):
+        if isinstance(directory, str):
+            directory = Path(directory)
+        else:
+            raise ValueError("You must provide a pathlib.Path object or a string that can convert to one")
+
     for dirs in directory.iterdir():
         print(dirs)
         for file_path in dirs.iterdir():

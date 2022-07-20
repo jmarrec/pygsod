@@ -1,21 +1,23 @@
 # In top level directory, run with python -m pytest
 # so that the folder is added to PYTHONPATH
-import pytest
+import datetime
+# import numpy as np
+import os
 
-# from mock import patch
+import pandas as pd
+import pytest
+from pkg_resources import resource_filename
 
 # Right now I have to do this, so that the pandas monkeypatching is done...
 # from gsodpy.gsodpy import GSOD, ISD
 from gsodpy.epw_converter import clean_df, epw_convert
 from gsodpy.ish_full import parse_ish_file
 from gsodpy.output import Output
-import pandas as pd
 
-# import numpy as np
-import os
-import datetime
+# from mock import patch
 
-from pkg_resources import resource_filename
+
+
 
 # This is used by almost all tests, so declaring it as global constant
 

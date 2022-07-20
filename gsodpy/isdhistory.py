@@ -1,10 +1,10 @@
 import os
 import time
 from ftplib import FTP
-import pandas as pd
-
 # For the Haversine Formula
-from math import cos, asin, sqrt
+from math import asin, cos, sqrt
+
+import pandas as pd
 
 from gsodpy.constants import ISDHISTORY_PATH
 

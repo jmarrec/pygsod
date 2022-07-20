@@ -11,19 +11,16 @@ Weather stations are stored into the file `weatherfiles.txt`
 with the syntax "USAF-WBAN"
 
 """
-import os
 import datetime
-import pandas as pd
-import numpy as np
+import os
 
-from gsodpy.noaadata import NOAAData
+import numpy as np
+import pandas as pd
+
 from gsodpy.constants import WEATHER_DIR
-from gsodpy.utils import (
-    DataType,
-    is_list_like,
-    get_valid_year,
-    sanitize_usaf_wban,
-)
+from gsodpy.noaadata import NOAAData
+from gsodpy.utils import (DataType, get_valid_year, is_list_like,
+                          sanitize_usaf_wban)
 
 
 def parse_isd_lite_op_file(op_path):

@@ -1,24 +1,20 @@
 # Make it backwards compatible with python 2
-from __future__ import print_function, division
-import sys
-
-import os
-from ftplib import FTP
-import gzip
-import pandas as pd
+from __future__ import division, print_function
 
 import datetime
+import gzip
+import os
 import re
+import sys
+import warnings
+from ftplib import FTP
 
-
+import pandas as pd
 from tqdm import tqdm
 
-
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
-from gsodpy.utils import is_list_like, ReturnCode, DataType, sanitize_usaf_wban
 from gsodpy.isdhistory import ISDHistory
-
-import warnings
+from gsodpy.utils import DataType, ReturnCode, is_list_like, sanitize_usaf_wban
 
 
 class NOAAData:

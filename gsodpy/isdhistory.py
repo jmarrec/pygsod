@@ -8,6 +8,7 @@ from math import cos, asin, sqrt
 
 from gsodpy.constants import ISDHISTORY_PATH
 
+
 class ISDHistory:
     """
     Class for the ISDHistory file and methods

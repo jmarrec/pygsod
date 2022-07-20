@@ -44,9 +44,9 @@ def parse_total_sky_cover(data):
     # TODO: Sky cover is stored as an enum represented by an int
     # eg: (00 = clear, 19=dark overcast, 99 = missing)
     # Perhaps we should store this as an enum?
-    if 'GF1' in data:
-        loc = data.find('GF1')
-        total_sky_cover = int(data[loc + 3:loc + 5])
+    if "GF1" in data:
+        loc = data.find("GF1")
+        total_sky_cover = int(data[loc + 3 : loc + 5])
         if total_sky_cover == 99:
             return np.nan
         else:
@@ -59,9 +59,9 @@ def parse_opaque_sky_cover(data):
     # TODO: Sky cover is stored as an enum represented by an int
     # eg: (00 = clear, 19=dark overcast, 99 = missing)
     # Perhaps we should store this as an enum?
-    if 'GF1' in data:
-        loc = data.find('GF1')
-        opaque_sky_cover = int(data[loc + 5:loc + 7])
+    if "GF1" in data:
+        loc = data.find("GF1")
+        opaque_sky_cover = int(data[loc + 5 : loc + 7])
         if opaque_sky_cover == 99:
             return np.nan
         else:
@@ -249,7 +249,7 @@ def parse_ish_file(isd_full, create_excel_file=True):
         i_op = i_op[i_op.index.year == year]
 
         if create_excel_file:
-            fname = os.path.join(p + '.xlsx')
+            fname = os.path.join(p + ".xlsx")
             i_op.to_excel(fname)
         all_ops.append(i_op)
 

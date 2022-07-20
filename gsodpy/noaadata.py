@@ -217,7 +217,8 @@ class NOAAData:
             raise ValueError(
                 "You must provide usaf AND wban, "
                 "OR country AND station_name, "
-                "OR latitude AND longitude.")
+                "OR latitude AND longitude."
+            )
 
     def set_stations(self, usaf_wbans):
         """

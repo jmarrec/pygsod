@@ -15,11 +15,21 @@ class GetOneStation(object):
     """Call the API to download the data for the selected weather station
     and save the data in the selected format"""
 
-    def __init__(self, type_of_file, type_of_output,
-                hdd_threshold, cdd_threshold, country, state,
-                station_name, latitude, longitude, start_year,
-                end_year):
-        '''Inputs : 
+    def __init__(
+        self,
+        type_of_file,
+        type_of_output,
+        hdd_threshold,
+        cdd_threshold,
+        country,
+        state,
+        station_name,
+        latitude,
+        longitude,
+        start_year,
+        end_year,
+    ):
+        """Inputs :
         - type_of_file (str) : "historical" or "TMY"
         - type_of_ouptut (str) : "CSV", "JSON", "EPW"
         - hdd_threshold (int)
@@ -30,7 +40,7 @@ class GetOneStation(object):
         - latitude (str or None)
         - longitude (str or None)
         - start_year (datetime)
-        - end_year (datetime)'''
+        - end_year (datetime)"""
         self.type_of_file = type_of_file
         self.type_output = type_of_output
         self.hdd_threshold = hdd_threshold
@@ -46,15 +56,21 @@ class GetOneStation(object):
         self.start_year = start_year
         self.end_year = end_year
 
-        if (self.country is None or self.station_name is None) and (self.latitude is None or self.latitude is None):
-            raise ValueError("You must provide at least station_name and country, or latitude and lontigude")
+        if (self.country is None or self.station_name is None) and (
+            self.latitude is None or self.latitude is None
+        ):
+            raise ValueError(
+                "You must provide at least station_name and country, or latitude and lontigude"
+            )
 
         if self.country is not None:
             self.filenamestub = f"{self.country}-{self.station_name}"
         else:
             self.filenamestub = f"{self.latitude}-{self.longitude}"
         if self.type_of_file == "historical":
-            self.filenamestub += f"-Historical-{self.start_year}-{self.end_year}"
+            self.filenamestub += (
+                f"-Historical-{self.start_year}-{self.end_year}"
+            )
         else:
             self.filenamestub += f"-TMY3"
 
@@ -170,19 +186,13 @@ class Output(object):
         return df
 
     def _file_names(self):
-        self.hourly_file_name = (
-            RESULT_DIR / (self.op_file_name + "-hourly")
-        )
+        self.hourly_file_name = RESULT_DIR / (self.op_file_name + "-hourly")
 
         # daily
-        self.daily_file_name = (
-            RESULT_DIR / (self.op_file_name + "-daily")
-        )
+        self.daily_file_name = RESULT_DIR / (self.op_file_name + "-daily")
 
         # monthly
-        self.monthly_file_name = (
-            RESULT_DIR / (self.op_file_name + "-monthly")
-        )
+        self.monthly_file_name = RESULT_DIR / (self.op_file_name + "-monthly")
 
     def output_daily(self, df_hourly):
         """output daily data by grouping by daily

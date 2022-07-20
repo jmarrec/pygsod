@@ -149,11 +149,18 @@ def epw_convert(df, op_file_name):
     epw.save(epw_file_new)
 
 
-def convert_all_isd_full_files():
+def convert_all_isd_full_files(directory=None):
     '''Runs epw_convert for all the files in the
-    isd_full folder'''
+    isd_full folder
+    
+    Arg : 
+    - directory (Path): should be the same type of folder than
+    isd_full, e.g one folder for each year and in these folders
+     you have weather file in .xlsx format'''
 
-    for dirs in (WEATHER_DIR / "isd_full").iterdir():
+    if directory is None:
+        directory = WEATHER_DIR / "isd_full"
+    for dirs in directory.iterdir():
         print(dirs)
         for file_path in dirs.iterdir():
             file_name = file_path.name

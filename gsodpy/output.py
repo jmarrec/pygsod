@@ -63,10 +63,10 @@ class GetOneStation(object):
 
         # output files
         for file in self.list_files:
-            self.o = Output(
+            o = Output(
                 file, self.type_output, self.hdd_threshold, self.cdd_threshold
             )
-            self.o.output_files()
+            o.output_files()
 
     def get_one_dataframe(self):
 

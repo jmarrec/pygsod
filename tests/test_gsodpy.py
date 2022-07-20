@@ -6,20 +6,18 @@ import os
 
 import pandas as pd
 import pytest
+from pathlib import Path
 from pkg_resources import resource_filename
 
 # Right now I have to do this, so that the pandas monkeypatching is done...
-# from gsodpy.gsodpy import GSOD, ISD
 from gsodpy.epw_converter import clean_df, epw_convert
+from gsodpy.isdhistory import ISDHistory
 from gsodpy.ish_full import parse_ish_file
+from gsodpy.noaadata import NOAAData
 from gsodpy.output import Output
+from gsodpy.utils import DataType
 
 # from mock import patch
-
-
-
-
-# This is used by almost all tests, so declaring it as global constant
 
 
 class TestGSOD:
@@ -31,32 +29,34 @@ class TestGSOD:
         """
         py.test for GSOD initialization
         """
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
         assert gsod
         assert gsod.weather_dir
         assert gsod.isd
-        assert isinstance(gsod.isd, ISD)
-        print(gsod.isd.isd_path)
+        assert isinstance(gsod.isd, ISDHistory)
+        print(gsod.isd.isd_history_path)
         print(os.path.realpath("../support/isd-history.csv"))
-        assert gsod.isd.isd_path == os.path.realpath("support/isd-history.csv")
+        assert gsod.isd.isd_history_path == os.path.realpath("support/isd-history.csv")
 
     def test_init_isd_path(self):
         """
         py.test for GSOD initialization with isd_path supplied
         """
-        gsod = GSOD(isd_path="tests/test_isd_path.csv")
+        gsod = NOAAData(
+            data_type=DataType.gsod, isd_path="tests/test_isd_path.csv"
+        )
         assert gsod
         assert gsod.weather_dir
         assert gsod.isd
-        assert isinstance(gsod.isd, ISD)
-        assert gsod.isd.isd_path
-        assert gsod.isd.isd_path == "tests/test_isd_path.csv"
+        assert isinstance(gsod.isd, ISDHistory)
+        assert gsod.isd.isd_history_path
+        assert gsod.isd.isd_history_path == "tests/test_isd_path.csv"
 
     def test_set_years(self):
         """
         py.test for GSOD.set_years with bad years
         """
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
         gsod.set_years([2016, "2003", 2004])
         assert gsod.years == [2003, 2004, 2016]
 
@@ -64,7 +64,7 @@ class TestGSOD:
         """
         py.test for GSOD.set_years with bad years
         """
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
         with pytest.raises(ValueError):
             gsod.set_years([2016, 2004, "2003", "not an int"])
 
@@ -72,7 +72,7 @@ class TestGSOD:
         """
         py.test for GSOD.set_years_range with bad years
         """
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
 
         # test default
         gsod.set_years_range()
@@ -91,7 +91,7 @@ class TestGSOD:
         """
         py.test for GSOD.sanitize_usaf_wban with bad years
         """
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
 
         # Test sanitation of USAF
         with pytest.warns(SyntaxWarning) as record:
@@ -120,7 +120,7 @@ class TestGSOD:
         py.test for GSOD.get_stations_from_file
         """
 
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
         # 744860-94789
         # 725020-14734
         # 64500-99999 ==> Sanitized to 064500-99999
@@ -144,12 +144,12 @@ class TestGSODDownloads:
         """
         py.test for GSOD._download_GSOD_file
         """
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
         (return_code, local_path) = gsod._download_GSOD_file(
             year=2017, usaf_wban="064500-99999"
         )
         assert return_code == 0
-        assert local_path == "weather_files/2017/064500-99999.op.gz"
+        assert local_path == Path("../weather_files/2017/064500-99999.op.gz")
         assert os.path.isfile(local_path)
 
 
@@ -160,14 +160,14 @@ class TestISD:
 
     @pytest.fixture(scope="class", autouse=False)
     def isd(self):
-        gsod = GSOD()
+        gsod = NOAAData(data_type=DataType.gsod)
         return gsod.isd
 
     def test_update_isd(self, isd):
         """
         py.test class for ISD.update_isd_history
         """
-        assert isd.isd_path == os.path.realpath("support/isd-history.csv")
+        assert isd.isd_history_path == Path("../support/isd-history.csv").resolve()
 
     # @patch (ISD.download_isd)
     def test_update_isd_needed(self, isd):
@@ -185,7 +185,7 @@ class TestISD:
         assert isd.update_isd_history(force=True, dry_run=True)
 
         # Remove the file, then try again
-        os.remove(isd.isd_path)
+        os.remove(isd.isd_history_path)
         assert isd.update_isd_history(dry_run=True)
 
     def test_parse_isd(self, isd):

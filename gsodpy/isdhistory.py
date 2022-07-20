@@ -1,6 +1,6 @@
-import os
 import time
 from ftplib import FTP
+from pathlib import Path
 # For the Haversine Formula
 from math import asin, cos, sqrt
 
@@ -14,7 +14,7 @@ class ISDHistory:
     Class for the ISDHistory file and methods
     """
 
-    def __init__(self, isd_history_path=None):
+    def __init__(self, isd_history_path: Path = None):
         """
         Init the ISDHistory. Checks if exists, if not downloads it,
         stores the outpath
@@ -28,7 +28,11 @@ class ISDHistory:
         # If isd_history_path isn't supplied, set it to the default path
         if isd_history_path is None:
             self.isd_history_path = ISDHISTORY_PATH
-        else:
+        elif not isinstance(isd_history_path, Path):
+            if isinstance(isd_history_path, str):
+                isd_history_path = Path(isd_history_path)
+            else:
+                raise ValueError("You must provide a pathlib.Path object or a string that can convert to one")
             self.isd_history_path = isd_history_path
 
         # See if the isd_history needs updating, otherwise just link it
@@ -74,14 +78,15 @@ class ISDHistory:
 
         update_needed = False
 
-        if os.path.isfile(isd_history_path):
+        if isd_history_path.is_file():
+            tm_time = isd_history_path.lstat().st_mtime
             print(
                 "isd-history.csv was last modified on: %s"
-                % time.ctime(os.path.getmtime(self.isd_history_path))
+                % time.ctime(tm_time)
             )
             # Check if the isd-history.csv is older than 1 month
             _d = 1 * 30 * 24 * 60 * 60
-            if time.time() - os.path.getmtime(self.isd_history_path) > _d:
+            if time.time() - tm_time > _d:
                 update_needed = True
             elif force:
                 print("Forcing update anyways")
@@ -102,7 +107,7 @@ class ISDHistory:
 
         return update_needed
 
-    def download_isd(self, isd_history_path):
+    def download_isd(self, isd_history_path: Path):
         """
         Downloads the isd-history.csv from NOAA
 

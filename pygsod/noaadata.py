@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from pygsod.constants import SUPPORT_DIR, WEATHER_DIR
 from pygsod.isdhistory import ISDHistory
-from pygsod.utils import DataType, ReturnCode, as_path, is_list_like, sanitize_usaf_wban
+from pygsod.utils import DataType, ReturnCode, as_path, sanitize_usaf_wban
 
 
 class NOAAData:
@@ -522,7 +522,7 @@ class NOAAData:
 
                         # Print latest date
                         with open(outpath, "rb") as out_file:
-                            first = next(out_file).decode()
+                            next(out_file).decode()
                             out_file.seek(-276, 2)
                             last = out_file.readlines()[-1].decode()
 

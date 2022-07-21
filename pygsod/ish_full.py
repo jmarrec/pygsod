@@ -21,13 +21,13 @@ import pandas as pd
 
 from pygsod.constants import WEATHER_DIR
 from pygsod.noaadata import NOAAData
-from pygsod.utils import DataType, get_valid_year, is_list_like, sanitize_usaf_wban
+from pygsod.utils import DataType, get_valid_year, is_list_like
 
 
 def parse_rh(data):
     if "RH1" in data:
         loc = data.find("RH3")
-        rh = int(data[loc + 7 : loc + 10])
+        rh = int(data[(loc + 7) : (loc + 10)])
         if rh == 999:
             return np.nan  # if using 999 therew will be issue in interpolating
         else:
@@ -42,7 +42,7 @@ def parse_total_sky_cover(data):
     # Perhaps we should store this as an enum?
     if "GF1" in data:
         loc = data.find("GF1")
-        total_sky_cover = int(data[loc + 3 : loc + 5])
+        total_sky_cover = int(data[(loc + 3) : (loc + 5)])
         if total_sky_cover == 99:
             return np.nan
         else:
@@ -57,7 +57,7 @@ def parse_opaque_sky_cover(data):
     # Perhaps we should store this as an enum?
     if "GF1" in data:
         loc = data.find("GF1")
-        opaque_sky_cover = int(data[loc + 5 : loc + 7])
+        opaque_sky_cover = int(data[(loc + 5) : (loc + 7)])
         if opaque_sky_cover == 99:
             return np.nan
         else:
@@ -69,7 +69,7 @@ def parse_opaque_sky_cover(data):
 def parse_zenith(data):
     if "GQ1" in data:
         loc = data.find("GQ1")
-        zenith_angle = int(data[loc + 7 : loc + 11])
+        zenith_angle = int(data[(loc + 7) : (loc + 11)])
         if zenith_angle == 9999:
             return np.nan
         else:
@@ -81,7 +81,7 @@ def parse_zenith(data):
 def parse_azimuth(data):
     if "GQ1" in data:
         loc = data.find("GQ1")
-        azimuth_angle = int(data[loc + 12 : loc + 16])
+        azimuth_angle = int(data[(loc + 12) : (loc + 16)])
         if azimuth_angle == 9999:
             return np.nan
         else:
@@ -126,10 +126,14 @@ def parse_ish_file(isd_full, create_excel_file=True):
     #                                          'Bool': np.bool}).to_dict()
     #
     # df['Name'] = df.FIELD
-    # df.loc[~df['IP_Units'].isnull(), 'Name'] = df.loc[~df['IP_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['IP_Units'].isnull(), 'IP_Units']
+    # df.loc[~df['IP_Units'].isnull(), 'Name'] = (
+    #     df.loc[~df['IP_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['IP_Units'].isnull(), 'IP_Units']
+    # )
     #
     # df['SI_Name'] = df.FIELD
-    # df.loc[~df['SI_Units'].isnull(), 'SI_Name'] = df.loc[~df['SI_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['SI_Units'].isnull(), 'SI_Units']
+    # df.loc[~df['SI_Units'].isnull(), 'SI_Name'] = (
+    #     df.loc[~df['SI_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['SI_Units'].isnull(), 'SI_Units']
+    # )
     #
     # names = df.Name.tolist()
     # Define the [start,end[ for the fixed-width format

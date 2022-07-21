@@ -1,22 +1,21 @@
-import os
 import time
 from ftplib import FTP
+from pathlib import Path
+# For the Haversine Formula
+from math import asin, cos, sqrt
+
 import pandas as pd
 
-# For the Haversine Formula
-from math import cos, asin, sqrt
-
-from gsodpy.constants import SUPPORT_DIR
-
-ISDHISTORY_PATH = os.path.join(SUPPORT_DIR, 'isd-history.csv')
+from gsodpy.constants import ISDHISTORY_PATH
+from gsodpy.utils import as_path
 
 
-class ISDHistory():
+class ISDHistory:
     """
     Class for the ISDHistory file and methods
     """
 
-    def __init__(self, isd_history_path=None):
+    def __init__(self, isd_history_path: Path = None):
         """
         Init the ISDHistory. Checks if exists, if not downloads it,
         stores the outpath
@@ -31,14 +30,15 @@ class ISDHistory():
         if isd_history_path is None:
             self.isd_history_path = ISDHISTORY_PATH
         else:
-            self.isd_history_path = isd_history_path
+            self.isd_history_path = as_path(isd_history_path)
 
         # See if the isd_history needs updating, otherwise just link it
-        self.update_isd_history(isd_history_path=self.isd_history_path)
-        self.df = self.parse_isd(isd_history_path=self.isd_history_path)
+        self.update_isd_history()
+        self._parse_isd()
 
-    def update_isd_history(self, isd_history_path=None, force=False,
-                           dry_run=False):
+    def update_isd_history(
+        self, force=False, dry_run=False
+    ):
         """
         Will download the `isd-history.csv` file
         if one of two conditions are true:
@@ -68,19 +68,17 @@ class ISDHistory():
 
         """
 
-        # Defaults the isd_history_path
-        if isd_history_path is None:
-            isd_history_path = self.isd_history_path
-            print("Using ISDHistory path: {}".format(isd_history_path))
-
         update_needed = False
 
-        if os.path.isfile(isd_history_path):
-            print("isd-history.csv was last modified on: %s" %
-                  time.ctime(os.path.getmtime(self.isd_history_path)))
+        if self.isd_history_path.is_file():
+            tm_time = self.isd_history_path.lstat().st_mtime
+            print(
+                "isd-history.csv was last modified on: %s"
+                % time.ctime(tm_time)
+            )
             # Check if the isd-history.csv is older than 1 month
-            _d = (1 * 30 * 24 * 60 * 60)
-            if (time.time() - os.path.getmtime(self.isd_history_path) > _d):
+            _d = 1 * 30 * 24 * 60 * 60
+            if time.time() - tm_time > _d:
                 update_needed = True
             elif force:
                 print("Forcing update anyways")
@@ -91,15 +89,20 @@ class ISDHistory():
 
         if update_needed:
             if not dry_run:
-                self.download_isd(isd_history_path)
+                ret = self.download_isd(isd_history_path=self.isd_history_path)
+                if not ret:
+                    raise ValueError(f"Something went wrong when downloading isd-history.csv to {self.isd_history_path}")
 
         else:
-            print("No updates necessary: isd-history.csv is not"
-                  " older than one month")
+            print(
+                "No updates necessary: isd-history.csv is not"
+                " older than one month"
+            )
 
         return update_needed
 
-    def download_isd(self, isd_history_path):
+    @staticmethod
+    def download_isd(isd_history_path: Path):
         """
         Downloads the isd-history.csv from NOAA
 
@@ -117,89 +120,76 @@ class ISDHistory():
 
         """
 
-        ftp = FTP('ftp.ncdc.noaa.gov')
+        ftp = FTP("ftp.ncdc.noaa.gov")
         ftp.login()
 
         # Change current working directory on FTP
         # isd-history is now stored there
-        ftp.cwd('/pub/data/noaa/')
+        ftp.cwd("/pub/data/noaa/")
         success = False
         # Try to retrieve it
         try:
-            ftp.retrbinary('RETR isd-history.csv',
-                           open(isd_history_path, 'wb').write)
+            ftp.retrbinary(
+                "RETR isd-history.csv", open(isd_history_path, "wb").write
+            )
             success = True
         except Exception as err:
             print("'isd-history.csv' failed to download")
             print("  {}".format(err))
-            success = False
+            return False
 
         print("Success: isd-history.csv loaded")
         ftp.quit()
 
         return success
 
-    def parse_isd(self, isd_history_path=None):
+    def _parse_isd(self):
         """
-        Loads the isd-history.csv into a pandas dataframe. Will serve to check
-        if the station has data up to the year we want data from and get
-        it's full name for reporting
+        Loads the isd-history.csv into a pandas dataframe.
 
-        Args:
-        ------
-            isd_history_path (str, Optional): path to `isd-history.csv`.
-                If None, will get the ISDHistory instance's `isd_pat` that was
-                set during initialization
-
-        Returns:
-        --------
-            df_isd (pd.DataFrame): the isd-history loaded into a dataframe,
-                indexed by "USAF-WBAN"
-
-        Needs:
-        -------------------------------
-            import os
-            import pandas as pd
-
+        Will serve to check if the station has data up to the year we want data from and get
+        its full name for reporting
         """
 
-        # Defaults the isd_history_path
-        if isd_history_path is None:
-            isd_history_path = self.isd_history_path
-            print("Using ISDHistory path: {}".format(isd_history_path))
-
-        df_isd = pd.read_csv(isd_history_path, sep=",", parse_dates=[9, 10])
+        self.df = pd.read_csv(self.isd_history_path, sep=",", parse_dates=[9, 10])
 
         # Need to format the USAF with leading zeros as needed
         # should always be len of 6, WBAN len 5
         # USAF now is a string, and has len 6 so no problem
 
-        df_isd['StationID'] = (df_isd['USAF'] + '-' +
-                               df_isd['WBAN'].map("{:05d}".format))
+        self.df["StationID"] = (
+            self.df["USAF"] + "-" + self.df["WBAN"].map("{:05d}".format)
+        )
 
-        df_isd = df_isd.set_index('StationID')
+        self.df = self.df.set_index("StationID")
 
-        return df_isd
-
-    def distance(self, lat1, lon1, lat2, lon2):
+    @staticmethod
+    def distance(lat1, lon1, lat2, lon2):
         """
         Computes the Haversine distance between two positions
 
         """
         p = 0.017453292519943295
-        a = 0.5 - cos((lat2-lat1)*p)/2 + \
-            cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
+        a = (
+            0.5
+            - cos((lat2 - lat1) * p) / 2
+            + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
+        )
         return 12742 * asin(sqrt(a))
 
-    def closest_weather_station(self, lat, lon):
+    def closest_weather_station(self, lat, lon, year=None):
         """
         Returns the USAF-WBAN of the closest weather station to the point
         specified by latitude and longitude as arguments
 
         """
-        self.df['distance'] = self.df.apply(lambda x: self.distance(x['LAT'],
-                                                                    x['LON'],
-                                                                    lat, lon),
-                                            axis=1)
-        print(self.df.loc[self.df['distance'].argmin()])
-        return self.df['distance'].argmin()
+        self.df["distance"] = self.df.apply(
+            lambda x: ISDHistory.distance(lat1=x["LAT"], lon1=x["LON"], lat2=lat, lon2=lon), axis=1
+        )
+        # print(self.df.loc[self.df['distance'].argmin()])
+
+        df = self.df.copy()
+        if year is not None:
+            df = df[df["END"].dt.year >= year]
+        d = df["distance"].argmin()
+        return df.index[d]

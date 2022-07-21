@@ -1,4 +1,4 @@
-'''
+"""
 
 Author: Julien Marrec
 Date: 2014-12-12
@@ -10,15 +10,16 @@ Extracts the gzip files and cleans up afterwards
 Weather stations are stored into the file `weatherfiles.txt`
 with the syntax "USAF-WBAN"
 
-'''
-import os
+"""
 import datetime
-import pandas as pd
-import numpy as np
+import os
 
-from gsodpy.noaadata import NOAAData
+import numpy as np
+import pandas as pd
+
 from gsodpy.constants import WEATHER_DIR
-from gsodpy.utils import (DataType, is_list_like, get_valid_year,
+from gsodpy.noaadata import NOAAData
+from gsodpy.utils import (DataType, get_valid_year, is_list_like,
                           sanitize_usaf_wban)
 
 
@@ -92,61 +93,61 @@ def parse_isd_lite_op_file(op_path):
 
     # Define column names
     names = [
-        'YEAR',
-        'MONTH',
-        'DAY',
-        'HOUR',
-        'TEMP_C',
-        'DEWP_C',
-        'SLP_HPa',
-        'WIND_dir',
-        'WDSP_ms',
-        'SkyCond',
-        'PRCP_mm_1hr',
-        'PRCP_mm_6hr',
+        "YEAR",
+        "MONTH",
+        "DAY",
+        "HOUR",
+        "TEMP_C",
+        "DEWP_C",
+        "SLP_HPa",
+        "WIND_dir",
+        "WDSP_ms",
+        "SkyCond",
+        "PRCP_mm_1hr",
+        "PRCP_mm_6hr",
     ]
 
     scale_factors = {
-        'YEAR': None,
-        'MONTH': None,
-        'DAY': None,
-        'HOUR': None,
-        'TEMP_C': 10.0,
-        'DEWP_C': 10.0,
-        'SLP_HPa': 10.0,
-        'WIND_dir': 1.0,
-        'WDSP_ms': 10.0,
-        'SkyCond': None,
-        'PRCP_mm_1hr': 10.0,
-        'PRCP_mm_6hr': 10.0,
+        "YEAR": None,
+        "MONTH": None,
+        "DAY": None,
+        "HOUR": None,
+        "TEMP_C": 10.0,
+        "DEWP_C": 10.0,
+        "SLP_HPa": 10.0,
+        "WIND_dir": 1.0,
+        "WDSP_ms": 10.0,
+        "SkyCond": None,
+        "PRCP_mm_1hr": 10.0,
+        "PRCP_mm_6hr": 10.0,
     }
 
     # Force dtypes
     dtypes = {
-        'YEAR': np.int32,
-        'MONTH': np.int32,
-        'DAY': np.int32,
-        'HOUR': np.int32,
-        'TEMP_C': np.float64,
-        'DEWP_C': np.float64,
-        'SLP_HPa': np.float64,
-        'WIND_dir': np.float64,
-        'WDSP_ms': np.float64,
+        "YEAR": np.int32,
+        "MONTH": np.int32,
+        "DAY": np.int32,
+        "HOUR": np.int32,
+        "TEMP_C": np.float64,
+        "DEWP_C": np.float64,
+        "SLP_HPa": np.float64,
+        "WIND_dir": np.float64,
+        "WDSP_ms": np.float64,
         # 'SkyCond': np.float64,
-        'PRCP_mm_1hr': np.float64,
-        'PRCP_mm_6hr': np.float64,
+        "PRCP_mm_1hr": np.float64,
+        "PRCP_mm_6hr": np.float64,
     }
 
     # Define NA values per column, based on gsod format description
     na_values = {
-        'TEMP_C': -9999,
-        'DEWP_C': -9999,
-        'SLP_HPa': -9999,
-        'WIND_dir': -9999,
-        'WDSP_ms': -9999,
-        'SkyCond': -9999,
-        'PRCP_mm_1hr': -9999,
-        'PRCP_mm_6hr': -9999,
+        "TEMP_C": -9999,
+        "DEWP_C": -9999,
+        "SLP_HPa": -9999,
+        "WIND_dir": -9999,
+        "WDSP_ms": -9999,
+        "SkyCond": -9999,
+        "PRCP_mm_1hr": -9999,
+        "PRCP_mm_6hr": -9999,
     }
 
     # If a single path, put it in a list of one-element
@@ -158,23 +159,28 @@ def parse_isd_lite_op_file(op_path):
         # TODO: NOT WORKING, there's an offset problem with the colspecs
         # I parsed from the isd-lite-format.txt
         # i_op = pd.read_fwf(p, index_col='Date',
-                           # parse_dates={'Date': ['YEAR', 'MONTH', 'DAY']},
-                           # colspecs=colspecs, header=None, names=names,
-                           # skiprows=1,
-                           # na_values=na_values, dtypes=dtypes)
+        # parse_dates={'Date': ['YEAR', 'MONTH', 'DAY']},
+        # colspecs=colspecs, header=None, names=names,
+        # skiprows=1,
+        # na_values=na_values, dtypes=dtypes)
 
-        i_op = pd.read_csv(p, sep=r'\s+', index_col='Date',
-                           parse_dates={'Date': ['YEAR', 'MONTH', 'DAY']},
-                           header=None, names=names,
-                           skiprows=1,
-                           na_values=na_values)
+        i_op = pd.read_csv(
+            p,
+            sep=r"\s+",
+            index_col="Date",
+            parse_dates={"Date": ["YEAR", "MONTH", "DAY"]},
+            header=None,
+            names=names,
+            skiprows=1,
+            na_values=na_values,
+        )
 
         # Parse USAF-WBAN from the file
         fname = os.path.basename(p)
-        usaf, wban, year = fname.split('-')
-        i_op['USAF'] = usaf
-        i_op['WBAN'] = wban
-        i_op['StationID'] = "{}-{}".format(usaf, wban)
+        usaf, wban, year = fname.split("-")
+        i_op["USAF"] = usaf
+        i_op["WBAN"] = wban
+        i_op["StationID"] = "{}-{}".format(usaf, wban)
 
         all_ops.append(i_op)
     op = pd.concat(all_ops)
@@ -187,28 +193,33 @@ def parse_isd_lite_op_file(op_path):
 
 
 # Gets only run if calling "python gsodpy.py" not if you import it
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     isd_lite = NOAAData(data_type=DataType.isd_lite)
 
     # This is what's run
-    start_year = get_valid_year("Enter start year in YYYY format."
-                                "Leave blank for current year "
-                                "({}):\n".format(datetime.date.today().year))
+    start_year = get_valid_year(
+        "Enter start year in YYYY format."
+        "Leave blank for current year "
+        "({}):\n".format(datetime.date.today().year)
+    )
 
-    end_year = get_valid_year("Enter end year in YYYY format."
-                              "Leave blank for current year "
-                              "({}):\n".format(datetime.date.today().year))
+    end_year = get_valid_year(
+        "Enter end year in YYYY format."
+        "Leave blank for current year "
+        "({}):\n".format(datetime.date.today().year)
+    )
     # Download the data
     isd_lite.set_years_range(start_year=start_year, end_year=end_year)
 
     # cleanup empty files, extract the gzip files, and delete them afterwards
     isd_lite.get_stations_from_file(
-        weather_stations_file=os.path.join(WEATHER_DIR,
-                                           'weather_stations.txt'))
+        weather_stations_file=os.path.join(WEATHER_DIR, "weather_stations.txt")
+    )
 
     print("Starting retrieving!")
     isd_lite.get_all_data()
-    print(isd_lite.ops_files)
     df = parse_isd_lite_op_file(isd_lite.ops_files)
+    fname = os.path.join(isd_lite.weather_dir, "df_isd_lite.xlsx")
+    df.to_excel(fname)
     print(df)

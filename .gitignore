@@ -1,9 +1,6 @@
 # Ignore the folder with all the individual downloaded weather files
 weather_files/
 
-# Ignore the support folder
-support/
-
 # =========================
 # eQuest
 # =========================
@@ -164,3 +161,6 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
+results/
+junit.xml

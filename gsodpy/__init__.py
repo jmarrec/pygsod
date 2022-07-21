@@ -4,4 +4,4 @@
 from pkg_resources import get_distribution
 
 # version number, from setup.py
-__version__ = get_distribution('gsodpy').version
+__version__ = get_distribution("gsodpy").version

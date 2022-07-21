@@ -76,21 +76,17 @@ if type_of_file == FileType.Historical:
     col1, col2 = st.columns(2)
 
     with col1:
-        start_year = int(
-            st.selectbox(
-                "Select the start year",
-                (str(i) for i in range(2010, 2023)),
-                on_change=set_to_false,
-            )
+        start_year = st.selectbox(
+            "Select the start year",
+            list(range(2010, 2023)),
+            on_change=set_to_false,
         )
     with col2:
-        end_year = int(
-            st.selectbox(
-                "Select the end year",
-                (str(i) for i in range(2010, 2023)),
-                12,
-                on_change=set_to_false,
-            )
+        end_year = st.selectbox(
+            "Select the end year",
+            list(range(2010, 2023)),
+            12,
+            on_change=set_to_false,
         )
 
     df_dropdown = read_isd_history()
@@ -238,8 +234,8 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             writer = pd.ExcelWriter(output, engine="xlsxwriter")
             df.to_excel(writer, index=False, sheet_name="Sheet1")
             workbook = writer.book
-            worksheet = writer.sheets["Sheet1"]
-            format1 = workbook.add_format({"num_format": "0.00"})
+            worksheet = writer.sheets["Sheet1"]  # type: ignore
+            format1 = workbook.add_format({"num_format": "0.00"})  # type: ignore
             worksheet.set_column("A:A", None, format1)
             writer.save()
             processed_data = output.getvalue()

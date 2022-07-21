@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from gsodpy.constants import ISDHISTORY_PATH
-from gsodpy.utils import as_path
+from pygsod.constants import ISDHISTORY_PATH
+from pygsod.utils import as_path
 
 
 class ISDHistory:

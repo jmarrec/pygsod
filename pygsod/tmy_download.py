@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 from pyepw.epw import EPW
 
-from gsodpy.constants import RESULT_DIR, WEATHER_DIR
+from pygsod.constants import RESULT_DIR, WEATHER_DIR
 
 
 class TMY(object):

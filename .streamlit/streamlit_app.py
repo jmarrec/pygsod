@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import streamlit as st
-from gsodpy.isdhistory import ISDHistory
-from gsodpy.output import GetOneStation
-from gsodpy.utils import FileType, OutputType
+from pygsod.isdhistory import ISDHistory
+from pygsod.output import GetOneStation
+from pygsod.utils import FileType, OutputType
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 

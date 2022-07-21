@@ -17,9 +17,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from gsodpy.constants import WEATHER_DIR
-from gsodpy.noaadata import NOAAData
-from gsodpy.utils import (DataType, get_valid_year, is_list_like,
+from pygsod.constants import WEATHER_DIR
+from pygsod.noaadata import NOAAData
+from pygsod.utils import (DataType, get_valid_year, is_list_like,
                           sanitize_usaf_wban)
 
 
@@ -192,7 +192,7 @@ def parse_isd_lite_op_file(op_path):
     return op
 
 
-# Gets only run if calling "python gsodpy.py" not if you import it
+# Gets only run if calling "python pygsod.py" not if you import it
 if __name__ == "__main__":
 
     isd_lite = NOAAData(data_type=DataType.isd_lite)

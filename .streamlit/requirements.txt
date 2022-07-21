@@ -3,4 +3,4 @@ tqdm
 pandas
 openpyxl
 pyepw
-git+https://github.com/jmarrec/gsodpy/@update-TMY#egg=gsodpy
+git+https://github.com/jmarrec/pygsod/@main#egg=pygsod

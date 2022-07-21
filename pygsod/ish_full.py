@@ -19,9 +19,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from gsodpy.constants import WEATHER_DIR
-from gsodpy.noaadata import NOAAData
-from gsodpy.utils import (DataType, get_valid_year, is_list_like,
+from pygsod.constants import WEATHER_DIR
+from pygsod.noaadata import NOAAData
+from pygsod.utils import (DataType, get_valid_year, is_list_like,
                           sanitize_usaf_wban)
 
 

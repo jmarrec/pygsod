@@ -12,9 +12,9 @@ from typing import Tuple
 
 from tqdm import tqdm
 
-from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
-from gsodpy.isdhistory import ISDHistory
-from gsodpy.utils import (DataType, ReturnCode, as_path, is_list_like,
+from pygsod.constants import SUPPORT_DIR, WEATHER_DIR
+from pygsod.isdhistory import ISDHistory
+from pygsod.utils import (DataType, ReturnCode, as_path, is_list_like,
                           sanitize_usaf_wban)
 
 

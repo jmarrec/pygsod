@@ -8,14 +8,14 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from gsodpy.constants import ISDHISTORY_PATH, WEATHER_DIR
+from pygsod.constants import ISDHISTORY_PATH, WEATHER_DIR
 # Right now I have to do this, so that the pandas monkeypatching is done...
-from gsodpy.epw_converter import clean_df
-from gsodpy.isdhistory import ISDHistory
-from gsodpy.ish_full import parse_ish_file
-from gsodpy.noaadata import NOAAData
-from gsodpy.output import Output
-from gsodpy.utils import DataType, ReturnCode, sanitize_usaf_wban
+from pygsod.epw_converter import clean_df
+from pygsod.isdhistory import ISDHistory
+from pygsod.ish_full import parse_ish_file
+from pygsod.noaadata import NOAAData
+from pygsod.output import Output
+from pygsod.utils import DataType, ReturnCode, sanitize_usaf_wban
 
 # from mock import patch
 

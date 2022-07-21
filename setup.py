@@ -20,7 +20,7 @@ LONG_DESCRIPTION = """A Wrapper to Download data off NOAA's Global Summary of th
 and load them into pandas"""
 
 setup(
-    name='gsodpy',
+    name='pygsod',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -90,7 +90,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        #'dev': ['check-manifest'],
+        'dev': ['black', 'mypi', 'isort', 'flake8'],
         'test': ['coverage', 'pytest', 'pytest-cov'],
     },
 

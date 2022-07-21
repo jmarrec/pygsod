@@ -5,12 +5,12 @@ from typing import Optional
 import pandas as pd
 from pyepw.epw import EPW
 
-from gsodpy.constants import RESULT_DIR, WEATHER_DIR
-from gsodpy.epw_converter import clean_df, epw_convert
-from gsodpy.ish_full import parse_ish_file
-from gsodpy.noaadata import NOAAData
-from gsodpy.tmy_download import TMY
-from gsodpy.utils import DataType, FileType, OutputType
+from pygsod.constants import RESULT_DIR, WEATHER_DIR
+from pygsod.epw_converter import clean_df, epw_convert
+from pygsod.ish_full import parse_ish_file
+from pygsod.noaadata import NOAAData
+from pygsod.tmy_download import TMY
+from pygsod.utils import DataType, FileType, OutputType
 
 
 class GetOneStation(object):

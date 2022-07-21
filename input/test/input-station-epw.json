@@ -1,0 +1,16 @@
+{	
+	"type_of_file": "historical",
+	"type_of_output": "EPW", 
+	"hdd_threshold": 70, 
+	"cdd_threshold": 80,
+
+	"start_year": 2012,
+	"end_year": 2012,
+
+	"country": "US",
+	"state": "NY",
+	"station_name": "LA GUARDIA AIRPORT",
+
+	"latitude": null,
+	"longitude": null
+}

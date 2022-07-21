@@ -1,24 +1,27 @@
 # Make it backwards compatible with python 2
 from __future__ import division, print_function
 
-import os # TODO: remove ASAP
 import datetime
 import gzip
+import os  # TODO: remove ASAP
 import re
 import warnings
-from pathlib import Path, PosixPath
 from ftplib import FTP
+from pathlib import Path, PosixPath
 from typing import Tuple
 
 from tqdm import tqdm
 
 from gsodpy.constants import SUPPORT_DIR, WEATHER_DIR
 from gsodpy.isdhistory import ISDHistory
-from gsodpy.utils import DataType, ReturnCode, is_list_like, sanitize_usaf_wban, as_path
+from gsodpy.utils import (DataType, ReturnCode, as_path, is_list_like,
+                          sanitize_usaf_wban)
 
 
 class NOAAData:
-    def __init__(self, data_type, isd_path: Path = None, weather_dir: Path = None):
+    def __init__(
+        self, data_type, isd_path: Path = None, weather_dir: Path = None
+    ):
         """
         Init the NOAAData main object, and attaches an `isd` (class ISD) to it
 
@@ -135,7 +138,7 @@ class NOAAData:
 
         """
         if weather_stations_file is None:
-            weather_stations_file =  self.weather_dir / "weather_stations.txt"
+            weather_stations_file = self.weather_dir / "weather_stations.txt"
         else:
             weather_stations_file = as_path(weather_stations_file)
 
@@ -207,7 +210,9 @@ class NOAAData:
 
         elif (latitude is not None) and (longitude is not None):
             self.stations = [
-                self.isd.closest_weather_station(lat=latitude, lon=longitude, year=year)
+                self.isd.closest_weather_station(
+                    lat=latitude, lon=longitude, year=year
+                )
             ]
             return self.stations
         else:
@@ -345,7 +350,9 @@ class NOAAData:
 
         return return_code, op_path
 
-    def _get_year_file(self, year: int, usaf_wban: str) -> Tuple[ReturnCode, Path]:
+    def _get_year_file(
+        self, year: int, usaf_wban: str
+    ) -> Tuple[ReturnCode, Path]:
         """
         Downloads data for a single year for a single station
 
@@ -419,7 +426,7 @@ class NOAAData:
         local_folder.mkdir(parents=True, exist_ok=True)
 
         remote_path = (remote_folder / remote_op_name).as_posix()
-        local_path = (local_folder / local_op_name)
+        local_path = local_folder / local_op_name
 
         # Check if there's data or not
         end_year = df_isd.loc[usaf_wban, "END"].year
@@ -466,7 +473,9 @@ class NOAAData:
 
         return (return_code, local_path)
 
-    def _cleanup_extract_file(self, op_gz_path: Path, delete_op_gz: bool = True) -> Path:
+    def _cleanup_extract_file(
+        self, op_gz_path: Path, delete_op_gz: bool = True
+    ) -> Path:
         """
         Extracts the individual *(.op).gz files to *.op and deletes the original
         gzip file. Also checks for empty files, and removes them
@@ -496,7 +505,9 @@ class NOAAData:
         else:
             # If not, we extract
             #  Should return xxxx.op and .gz
-            op_path = op_gz_path.with_suffix('')   # or `op_gz_path.parent / op_gz_path.stem`
+            op_path = op_gz_path.with_suffix(
+                ""
+            )  # or `op_gz_path.parent / op_gz_path.stem`
             gz = op_gz_path.suffix
 
             if gz == ".gz":

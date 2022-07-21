@@ -233,6 +233,8 @@ def as_path(path: Union[Path, str]) -> Path:
         if isinstance(path, str):
             path = Path(path)
         else:
-            raise ValueError("You must provide a pathlib.Path object or a string that can convert to one")
+            raise ValueError(
+                "You must provide a pathlib.Path object or a string that can convert to one"
+            )
 
     return path

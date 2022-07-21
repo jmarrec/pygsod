@@ -87,7 +87,9 @@ class GetOneStation(object):
         elif self.type_of_file == FileType.TMY:
             self.filenamestub += "-TMY3"
         else:
-            raise NotImplementedError(f"Could not understand type_of_file={self.type_of_file}")
+            raise NotImplementedError(
+                f"Could not understand type_of_file={self.type_of_file}"
+            )
 
     def run(self):
         self.list_files = self._get_data()
@@ -166,8 +168,13 @@ class GetOneStation(object):
 class Output(object):
     """Class for output weather data into specific type"""
 
-    def __init__(self, file: Path, type_of_output: OutputType, hdd_threshold: Optional[float] = 65.0, cdd_threshold:
-                 Optional[float]=65.0):
+    def __init__(
+        self,
+        file: Path,
+        type_of_output: OutputType,
+        hdd_threshold: Optional[float] = 65.0,
+        cdd_threshold: Optional[float] = 65.0,
+    ):
         """Constructs an Output object."""
 
         self.file = Path(file)
@@ -307,8 +314,9 @@ class Output(object):
                 df_monthly.to_excel(str(self.monthly_file_name) + ".xlsx")
 
             else:
-                raise NotImplementedError(f"OutputType={self.type_of_output} is not implemented.")
-
+                raise NotImplementedError(
+                    f"OutputType={self.type_of_output} is not implemented."
+                )
 
     def create_dataframe(self):
         df = self.get_hourly_data()

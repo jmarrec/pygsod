@@ -3,11 +3,12 @@
 import datetime
 # import numpy as np
 import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
-from pathlib import Path
 
+from gsodpy.constants import ISDHISTORY_PATH, WEATHER_DIR
 # Right now I have to do this, so that the pandas monkeypatching is done...
 from gsodpy.epw_converter import clean_df
 from gsodpy.isdhistory import ISDHistory
@@ -15,7 +16,6 @@ from gsodpy.ish_full import parse_ish_file
 from gsodpy.noaadata import NOAAData
 from gsodpy.output import Output
 from gsodpy.utils import DataType, ReturnCode, sanitize_usaf_wban
-from gsodpy.constants import WEATHER_DIR, ISDHISTORY_PATH
 
 # from mock import patch
 
@@ -38,9 +38,7 @@ class TestGSOD:
         """
         isd_path = Path(__file__).resolve().parent / "test_isd_path.csv"
 
-        gsod = NOAAData(
-            data_type=DataType.gsod, isd_path=isd_path
-        )
+        gsod = NOAAData(data_type=DataType.gsod, isd_path=isd_path)
         assert gsod
         assert gsod.weather_dir
         assert gsod.isd
@@ -139,7 +137,15 @@ class TestGSODDownloads:
             year=2017, usaf_wban="744860-94789"
         )
         assert return_code == ReturnCode.success
-        assert local_path == (WEATHER_DIR / "gsod" / "2017" / "JOHN F KENNEDY INTERNATIONAL AIRPORT-2017.op").resolve()
+        assert (
+            local_path
+            == (
+                WEATHER_DIR
+                / "gsod"
+                / "2017"
+                / "JOHN F KENNEDY INTERNATIONAL AIRPORT-2017.op"
+            ).resolve()
+        )
         assert local_path.is_file()
 
 
@@ -204,7 +210,7 @@ class TestISDFULL:
         # Download the data
         isd_full.set_years_range(start_year=start_year, end_year=end_year)
 
-        isd_full.set_stations(['744860-94789'])
+        isd_full.set_stations(["744860-94789"])
 
         isd_full.get_all_data()
 
@@ -238,7 +244,12 @@ class TestISDFULL:
         #      Test output_daily()
         # ----------------
 
-        o = Output(file=isd_full.ops_files[0], type_of_output='CSV', hdd_threshold=65.0, cdd_threshold=65.0)
+        o = Output(
+            file=isd_full.ops_files[0],
+            type_of_output="CSV",
+            hdd_threshold=65.0,
+            cdd_threshold=65.0,
+        )
 
         df_daily = o.output_daily(df_hourly)
         assert df_daily.shape == (366, 11)

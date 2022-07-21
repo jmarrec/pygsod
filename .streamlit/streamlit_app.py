@@ -1,12 +1,11 @@
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import streamlit as st
-from io import BytesIO
-
-from gsodpy.output import GetOneStation
 from gsodpy.isdhistory import ISDHistory
+from gsodpy.output import GetOneStation
 from gsodpy.utils import FileType, OutputType
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
@@ -226,7 +225,8 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
 
     if type_of_file == FileType.Historical:
         freq = st.selectbox(
-            "Select the frequency of the data", ["Hourly", "Daily", "Monthly"],
+            "Select the frequency of the data",
+            ["Hourly", "Daily", "Monthly"],
         )
 
         if freq == "Hourly":
@@ -247,12 +247,12 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             return df.to_csv()
         elif type_of_output == OutputType.XLSX:
             output = BytesIO()
-            writer = pd.ExcelWriter(output, engine='xlsxwriter')
-            df.to_excel(writer, index=False, sheet_name='Sheet1')
+            writer = pd.ExcelWriter(output, engine="xlsxwriter")
+            df.to_excel(writer, index=False, sheet_name="Sheet1")
             workbook = writer.book
-            worksheet = writer.sheets['Sheet1']
-            format1 = workbook.add_format({'num_format': '0.00'})
-            worksheet.set_column('A:A', None, format1)
+            worksheet = writer.sheets["Sheet1"]
+            format1 = workbook.add_format({"num_format": "0.00"})
+            worksheet.set_column("A:A", None, format1)
             writer.save()
             processed_data = output.getvalue()
             return processed_data
@@ -260,7 +260,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
     st.download_button(
         label="Save Temperature Files",
         data=convert_df(df, type_of_output),
-        file_name=f"{st.session_state['station'].filenamestub}-{freq.lower()}.{type_of_output.name.lower()}"
+        file_name=f"{st.session_state['station'].filenamestub}-{freq.lower()}.{type_of_output.name.lower()}",
     )
 
 

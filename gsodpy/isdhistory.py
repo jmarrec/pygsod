@@ -1,8 +1,8 @@
 import time
 from ftplib import FTP
-from pathlib import Path
 # For the Haversine Formula
 from math import asin, cos, sqrt
+from pathlib import Path
 
 import pandas as pd
 
@@ -36,9 +36,7 @@ class ISDHistory:
         self.update_isd_history()
         self._parse_isd()
 
-    def update_isd_history(
-        self, force=False, dry_run=False
-    ):
+    def update_isd_history(self, force=False, dry_run=False):
         """
         Will download the `isd-history.csv` file
         if one of two conditions are true:
@@ -73,8 +71,7 @@ class ISDHistory:
         if self.isd_history_path.is_file():
             tm_time = self.isd_history_path.lstat().st_mtime
             print(
-                "isd-history.csv was last modified on: %s"
-                % time.ctime(tm_time)
+                "isd-history.csv was last modified on: %s" % time.ctime(tm_time)
             )
             # Check if the isd-history.csv is older than 1 month
             _d = 1 * 30 * 24 * 60 * 60
@@ -91,7 +88,9 @@ class ISDHistory:
             if not dry_run:
                 ret = self.download_isd(isd_history_path=self.isd_history_path)
                 if not ret:
-                    raise ValueError(f"Something went wrong when downloading isd-history.csv to {self.isd_history_path}")
+                    raise ValueError(
+                        f"Something went wrong when downloading isd-history.csv to {self.isd_history_path}"
+                    )
 
         else:
             print(
@@ -151,7 +150,9 @@ class ISDHistory:
         its full name for reporting
         """
 
-        self.df = pd.read_csv(self.isd_history_path, sep=",", parse_dates=[9, 10])
+        self.df = pd.read_csv(
+            self.isd_history_path, sep=",", parse_dates=[9, 10]
+        )
 
         # Need to format the USAF with leading zeros as needed
         # should always be len of 6, WBAN len 5
@@ -184,7 +185,10 @@ class ISDHistory:
 
         """
         self.df["distance"] = self.df.apply(
-            lambda x: ISDHistory.distance(lat1=x["LAT"], lon1=x["LON"], lat2=lat, lon2=lon), axis=1
+            lambda x: ISDHistory.distance(
+                lat1=x["LAT"], lon1=x["LON"], lat2=lat, lon2=lon
+            ),
+            axis=1,
         )
         # print(self.df.loc[self.df['distance'].argmin()])
 

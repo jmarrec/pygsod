@@ -11,6 +11,7 @@ from gsodpy.constants import RESULT_DIR, SUPPORT_DIR, WEATHER_DIR
 from gsodpy.ish_full import parse_ish_file
 from gsodpy.utils import as_path
 
+
 def clean_df(df, file):
     """clean raw data into hourly
     interpolate for missing data

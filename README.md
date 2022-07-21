@@ -1,5 +1,10 @@
 # Weather Data and Weather Normalization
 
+
+[![pypi](https://img.shields.io/pypi/v/gsodpy.svg)](https://pypi.org/project/gsodpy/)
+[![python](https://img.shields.io/pypi/pyversions/gsodpy.svg)](https://pypi.org/project/gsodpy/)
+[![Build Status](https://github.com/jmarrec/gsodpy/actions/workflows/dev.yml/badge.svg)](https://github.com/jmarrec/gsodpy/actions/workflows/dev.yml)
+
 ## Caveat
 
 **This is a work in progress: The documentation is outdated and lacking, test coverage is low.** But I decided open sourcing was better than not anyways.

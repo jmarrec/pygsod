@@ -38,7 +38,12 @@ setup(
     # Author details
     author='Julien Marrec & EffiBEM',
     author_email='contact@effibem.com',
-    url="www.effibem.com",
+    url= "https://effibem.com",
+    project_urls={
+        "Bug Tracker": "https://github.com/jmarrec/pygsod/issues",
+        "Source Code": "https://github.com/jmarrec/pygsod",
+    },
+
 
     # Choose your license
     license='MIT',

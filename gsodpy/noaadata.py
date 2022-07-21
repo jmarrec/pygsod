@@ -7,7 +7,7 @@ import os  # TODO: remove ASAP
 import re
 import warnings
 from ftplib import FTP
-from pathlib import Path, PosixPath
+from pathlib import Path
 from typing import Tuple
 
 from tqdm import tqdm
@@ -44,14 +44,14 @@ class NOAAData:
         self.data_type = data_type
         self.gz_ext = "gz"
         if data_type == DataType.gsod:
-            self.ftp_folder = PosixPath("/pub/data/gsod/")
+            self.ftp_folder = Path("/pub/data/gsod/")
             _folder_name = "gsod"
             self.gz_ext = "op.gz"
         elif data_type == DataType.isd_full:
-            self.ftp_folder = PosixPath("/pub/data/noaa/")
+            self.ftp_folder = Path("/pub/data/noaa/")
             _folder_name = "isd_full"
         elif data_type == DataType.isd_lite:
-            self.ftp_folder = PosixPath("/pub/data/noaa/isd-lite")
+            self.ftp_folder = Path("/pub/data/noaa/isd-lite")
             _folder_name = "isd_lite"
         else:
             raise NotImplementedError(

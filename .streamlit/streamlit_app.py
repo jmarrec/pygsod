@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import streamlit as st
+
 from pygsod.isdhistory import ISDHistory
 from pygsod.output import GetOneStation
 from pygsod.utils import FileType, OutputType
@@ -140,30 +141,17 @@ if not lat_long:
         if country == "":
             list_states = ["N/A"]
         else:
-            list_states = (
-                df_dropdown[df_dropdown.CTRY == country]["STATE"]
-                .fillna("N/A")
-                .sort_values()
-                .unique()
-            )
-        state = st.selectbox(
-            "State", list_states, on_change=set_to_false
-        ).replace("N/A", "")
+            list_states = df_dropdown[df_dropdown.CTRY == country]["STATE"].fillna("N/A").sort_values().unique()
+        state = st.selectbox("State", list_states, on_change=set_to_false).replace("N/A", "")
 
     if state == "":
         state = None
 
     if state is None:
-        list_ws = (
-            df_dropdown[(df_dropdown.CTRY == country)]["STATION NAME"]
-            .sort_values()
-            .unique()
-        )
+        list_ws = df_dropdown[(df_dropdown.CTRY == country)]["STATION NAME"].sort_values().unique()
     else:
         list_ws = (
-            df_dropdown[
-                (df_dropdown.CTRY == country) & (df_dropdown.STATE == state)
-            ]["STATION NAME"]
+            df_dropdown[(df_dropdown.CTRY == country) & (df_dropdown.STATE == state)]["STATION NAME"]
             .sort_values()
             .unique()
         )

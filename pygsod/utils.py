@@ -76,9 +76,7 @@ def is_list_like(obj):
     False
     """
 
-    return hasattr(obj, "__iter__") and not isinstance(
-        obj, string_and_binary_types
-    )
+    return hasattr(obj, "__iter__") and not isinstance(obj, string_and_binary_types)
 
 
 class ReturnCode(Enum):
@@ -126,10 +124,7 @@ def sanitize_usaf_wban(usaf_wban):
     # Format USAF and WBAN as fixed-length numbers (strings)
     usaf, wban = usaf_wban.split("-")
     if (len(usaf) > 6) | (len(wban) > 5):
-        raise ValueError(
-            "USAF must be len 6 and WBAN len 5, "
-            "you provided {}".format(usaf_wban)
-        )
+        raise ValueError("USAF must be len 6 and WBAN len 5, " "you provided {}".format(usaf_wban))
     if len(usaf) < 6:
         msg = "USAF must be len 6, " "adding leading zeros to '{}'".format(usaf)
         warnings.warn(msg, SyntaxWarning)
@@ -233,8 +228,6 @@ def as_path(path: Union[Path, str]) -> Path:
         if isinstance(path, str):
             path = Path(path)
         else:
-            raise ValueError(
-                "You must provide a pathlib.Path object or a string that can convert to one"
-            )
+            raise ValueError("You must provide a pathlib.Path object or a string that can convert to one")
 
     return path

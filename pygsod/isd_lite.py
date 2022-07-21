@@ -19,8 +19,7 @@ import pandas as pd
 
 from pygsod.constants import WEATHER_DIR
 from pygsod.noaadata import NOAAData
-from pygsod.utils import (DataType, get_valid_year, is_list_like,
-                          sanitize_usaf_wban)
+from pygsod.utils import DataType, get_valid_year, is_list_like, sanitize_usaf_wban
 
 
 def parse_isd_lite_op_file(op_path):
@@ -199,23 +198,17 @@ if __name__ == "__main__":
 
     # This is what's run
     start_year = get_valid_year(
-        "Enter start year in YYYY format."
-        "Leave blank for current year "
-        "({}):\n".format(datetime.date.today().year)
+        "Enter start year in YYYY format." "Leave blank for current year " "({}):\n".format(datetime.date.today().year)
     )
 
     end_year = get_valid_year(
-        "Enter end year in YYYY format."
-        "Leave blank for current year "
-        "({}):\n".format(datetime.date.today().year)
+        "Enter end year in YYYY format." "Leave blank for current year " "({}):\n".format(datetime.date.today().year)
     )
     # Download the data
     isd_lite.set_years_range(start_year=start_year, end_year=end_year)
 
     # cleanup empty files, extract the gzip files, and delete them afterwards
-    isd_lite.get_stations_from_file(
-        weather_stations_file=os.path.join(WEATHER_DIR, "weather_stations.txt")
-    )
+    isd_lite.get_stations_from_file(weather_stations_file=os.path.join(WEATHER_DIR, "weather_stations.txt"))
 
     print("Starting retrieving!")
     isd_lite.get_all_data()

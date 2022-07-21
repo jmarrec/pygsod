@@ -129,21 +129,21 @@ def epw_convert(df, op_file_name):
             value_winddirection = df["WIND_DIRECTION"][i]
             wd.wind_direction = value_winddirection
 
-            # 	   Relative Humidity Percentage
+            #      Relative Humidity Percentage
             # ----------------
             value_rh = df["RELATIVE_HUMIDITY_PERCENTAGE"][i]
             if np.isnan(value_rh):
                 value_rh = 0
             wd.relative_humidity = value_rh
 
-            # 	   Total Sky Cover
+            #      Total Sky Cover
             # ----------------
             value_total_sky_cover = df["TOTAL_SKY_COVER"][i] / 2
             # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
             # scaling
             wd.total_sky_cover = value_total_sky_cover
 
-            # 	   Opaque Sky Cover
+            #      Opaque Sky Cover
             # ----------------
             value_opaque_sky_cover = df["OPAQUE_SKY_COVER"][i] / 2
             # divided by 2 because NOAA uses 20t0 scaling while EPW uses tenth
@@ -174,6 +174,6 @@ def convert_all_isd_full_files(directory: Path = None):
             file_name = file_path.name
             if file_name.endswith("xlsx"):
 
-                df = pd.read_excel(file_path, index_col=0)
+                df = pd.read_excel(str(file_path), index_col=0)
                 df = clean_df(df, file_name)
                 epw_convert(df, file_name)

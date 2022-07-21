@@ -122,9 +122,7 @@ class TestGSOD:
             gsod.get_stations_from_file("tests/test_weather_stations.txt")
         # check that only one warning was raised
         assert len(record) == 1
-        assert sorted(gsod.stations) == sorted(
-            ["744860-94789", "725020-14734", "064500-99999"]
-        )
+        assert sorted(gsod.stations) == sorted(["744860-94789", "725020-14734", "064500-99999"])
 
 
 class TestGSODDownloads:
@@ -133,19 +131,9 @@ class TestGSODDownloads:
     def test_download_GSOD_file(self):
         """py.test for GSOD._download_GSOD_file."""
         gsod = NOAAData(data_type=DataType.gsod)
-        (return_code, local_path) = gsod.get_year_file(
-            year=2017, usaf_wban="744860-94789"
-        )
+        (return_code, local_path) = gsod.get_year_file(year=2017, usaf_wban="744860-94789")
         assert return_code == ReturnCode.success
-        assert (
-            local_path
-            == (
-                WEATHER_DIR
-                / "gsod"
-                / "2017"
-                / "JOHN F KENNEDY INTERNATIONAL AIRPORT-2017.op"
-            ).resolve()
-        )
+        assert local_path == (WEATHER_DIR / "gsod" / "2017" / "JOHN F KENNEDY INTERNATIONAL AIRPORT-2017.op").resolve()
         assert local_path.is_file()
 
 

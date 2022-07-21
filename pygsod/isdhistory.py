@@ -70,9 +70,7 @@ class ISDHistory:
 
         if self.isd_history_path.is_file():
             tm_time = self.isd_history_path.lstat().st_mtime
-            print(
-                "isd-history.csv was last modified on: %s" % time.ctime(tm_time)
-            )
+            print("isd-history.csv was last modified on: %s" % time.ctime(tm_time))
             # Check if the isd-history.csv is older than 1 month
             _d = 1 * 30 * 24 * 60 * 60
             if time.time() - tm_time > _d:
@@ -93,10 +91,7 @@ class ISDHistory:
                     )
 
         else:
-            print(
-                "No updates necessary: isd-history.csv is not"
-                " older than one month"
-            )
+            print("No updates necessary: isd-history.csv is not" " older than one month")
 
         return update_needed
 
@@ -128,9 +123,7 @@ class ISDHistory:
         success = False
         # Try to retrieve it
         try:
-            ftp.retrbinary(
-                "RETR isd-history.csv", open(isd_history_path, "wb").write
-            )
+            ftp.retrbinary("RETR isd-history.csv", open(isd_history_path, "wb").write)
             success = True
         except Exception as err:
             print("'isd-history.csv' failed to download")
@@ -150,17 +143,13 @@ class ISDHistory:
         its full name for reporting
         """
 
-        self.df = pd.read_csv(
-            self.isd_history_path, sep=",", parse_dates=[9, 10]
-        )
+        self.df = pd.read_csv(self.isd_history_path, sep=",", parse_dates=[9, 10])
 
         # Need to format the USAF with leading zeros as needed
         # should always be len of 6, WBAN len 5
         # USAF now is a string, and has len 6 so no problem
 
-        self.df["StationID"] = (
-            self.df["USAF"] + "-" + self.df["WBAN"].map("{:05d}".format)
-        )
+        self.df["StationID"] = self.df["USAF"] + "-" + self.df["WBAN"].map("{:05d}".format)
 
         self.df = self.df.set_index("StationID")
 
@@ -171,11 +160,7 @@ class ISDHistory:
 
         """
         p = 0.017453292519943295
-        a = (
-            0.5
-            - cos((lat2 - lat1) * p) / 2
-            + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
-        )
+        a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
         return 12742 * asin(sqrt(a))
 
     def closest_weather_station(self, lat, lon, year=None):
@@ -185,9 +170,7 @@ class ISDHistory:
 
         """
         self.df["distance"] = self.df.apply(
-            lambda x: ISDHistory.distance(
-                lat1=x["LAT"], lon1=x["LON"], lat2=lat, lon2=lon
-            ),
+            lambda x: ISDHistory.distance(lat1=x["LAT"], lon1=x["LON"], lat2=lat, lon2=lon),
             axis=1,
         )
         # print(self.df.loc[self.df['distance'].argmin()])

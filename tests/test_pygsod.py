@@ -1,6 +1,7 @@
 # In top level directory, run with python -m pytest
 # so that the folder is added to PYTHONPATH
 import datetime
+
 # import numpy as np
 import os
 from pathlib import Path
@@ -9,6 +10,7 @@ import pandas as pd
 import pytest
 
 from pygsod.constants import ISDHISTORY_PATH, WEATHER_DIR
+
 # Right now I have to do this, so that the pandas monkeypatching is done...
 from pygsod.epw_converter import clean_df
 from pygsod.isdhistory import ISDHistory

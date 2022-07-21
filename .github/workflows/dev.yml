@@ -45,11 +45,11 @@ jobs:
       - name: list files
         run: ls -l .
 
-#       - uses: codecov/codecov-action@v3
-#         with:
-#           flags: "${{ matrix.os }} - ${{ matrix.python-versions }}"
-#           fail_ci_if_error: true
-#           files: coverage.xml
+      - uses: codecov/codecov-action@v3
+        with:
+          flags: "${{ matrix.os }} - ${{ matrix.python-versions }}"
+          fail_ci_if_error: true
+          files: coverage.xml
 
   lint:
     runs-on: ubuntu-latest
@@ -69,12 +69,16 @@ jobs:
 
       - name: mypy
         run: |
-          mypy  --ignore-missing-imports .
+          mypy pygsod tests .streamlit
 
       - name: black
         run: |
-          black -l 120 --check .
+          black pygsod tests .streamlit
 
       - name: isort
         run: |
-          isort -l 120 --check .
+          isort pygsod tests .streamlit
+
+      - name: Flake8 (not throwing yet)
+        run: |
+          flake8 || true

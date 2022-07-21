@@ -95,7 +95,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev': ['black', 'mypi', 'isort', 'flake8'],
+        'dev': ['black', 'mypy', 'isort', 'flake8'],
         'test': ['coverage', 'pytest', 'pytest-cov'],
     },
 

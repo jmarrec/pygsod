@@ -246,7 +246,7 @@ def parse_ish_file(isd_full, create_excel_file=True):
         i_op = i_op[i_op.index.year == year]
 
         if create_excel_file:
-            fname = os.path.join(p + ".xlsx")
+            fname = p.with_suffix(".xlsx")
             i_op.to_excel(fname)
         all_ops.append(i_op)
 

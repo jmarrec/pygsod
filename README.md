@@ -4,6 +4,7 @@
 [![pypi](https://img.shields.io/pypi/v/pygsod.svg)](https://pypi.org/project/pygsod/)
 [![python](https://img.shields.io/pypi/pyversions/pygsod.svg)](https://pypi.org/project/pygsod/)
 [![Build Status](https://github.com/jmarrec/pygsod/actions/workflows/dev.yml/badge.svg)](https://github.com/jmarrec/pygsod/actions/workflows/dev.yml)
+[![codecov](https://codecov.io/gh/jmarrec/pygsod/branch/main/graphs/badge.svg)](https://codecov.io/github/jmarrec/pygsod)
 
 ## Caveat
 

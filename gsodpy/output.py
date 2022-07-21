@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from pyepw.epw import EPW
@@ -9,7 +10,7 @@ from gsodpy.epw_converter import clean_df, epw_convert
 from gsodpy.ish_full import parse_ish_file
 from gsodpy.noaadata import NOAAData
 from gsodpy.tmy_download import TMY
-from gsodpy.utils import DataType
+from gsodpy.utils import DataType, FileType, OutputType
 
 
 class GetOneStation(object):
@@ -18,30 +19,41 @@ class GetOneStation(object):
 
     def __init__(
         self,
-        type_of_file,
-        type_of_output,
-        hdd_threshold,
-        cdd_threshold,
-        country,
-        state,
-        station_name,
-        latitude,
-        longitude,
-        start_year,
-        end_year,
+        type_of_file: FileType,
+        type_of_output: OutputType,
+        start_year: int,
+        end_year: int,
+        hdd_threshold: Optional[float] = 65.0,
+        cdd_threshold: Optional[float] = 65.0,
+        # Either this
+        country: Optional[str] = None,
+        station_name: Optional[str] = None,
+        state: Optional[str] = None,  # Optional
+        # Or that
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
     ):
-        """Inputs :
-        - type_of_file (str) : "historical" or "TMY"
-        - type_of_ouptut (str) : "CSV", "JSON", "EPW"
-        - hdd_threshold (int)
-        - cdd_threshold (int)
+        """Constructor for GetOneStation
+
+        Inputs:
+        --------
+
+        - type_of_file (FileType)
+        - type_of_ouptut (OutputType)
+        - start_year (int)
+        - end_year (int)
+        - hdd_threshold (int, Optional): CDD threshold tmeperature in degree F
+        - cdd_threshold (int, Optional): CDD theshold temperature in degree F
+
+        Provide either
         - country (str)
-        - state (str)
         - station_name (str)
+        - state (str, Optional)
+
+        Or:
         - latitude (str or None)
         - longitude (str or None)
-        - start_year (datetime)
-        - end_year (datetime)"""
+        """
         self.type_of_file = type_of_file
         self.type_output = type_of_output
         self.hdd_threshold = hdd_threshold
@@ -68,12 +80,14 @@ class GetOneStation(object):
             self.filenamestub = f"{self.country}-{self.station_name}"
         else:
             self.filenamestub = f"{self.latitude}-{self.longitude}"
-        if self.type_of_file == "historical":
+        if self.type_of_file == FileType.Historical:
             self.filenamestub += (
                 f"-Historical-{self.start_year}-{self.end_year}"
             )
+        elif self.type_of_file == FileType.TMY:
+            self.filenamestub += "-TMY3"
         else:
-            self.filenamestub += f"-TMY3"
+            raise NotImplementedError(f"Could not understand type_of_file={self.type_of_file}")
 
     def run(self):
         self.list_files = self._get_data()
@@ -107,11 +121,11 @@ class GetOneStation(object):
         self.df_monthly = df_monthly
 
     def _get_data(self):
-        if self.type_of_file == "historical":
+        if self.type_of_file == FileType.Historical:
             # download isd_full
             list_files = self._download_historical_data()
 
-        elif self.type_of_file == "TMY":
+        elif self.type_of_file == FileType.TMY:
             # download weather data from EP+ website
             tmy_data = TMY(self.country, self.station_name, self.state)
             self.tmy = tmy_data
@@ -120,7 +134,7 @@ class GetOneStation(object):
         else:
             raise ValueError(
                 "The type of file is not correct, it should be"
-                " TMY or historical not {}.".format(self.type_of_file)
+                f" TMY or historical not {self.type_of_file}"
             )
 
         return list_files
@@ -152,7 +166,9 @@ class GetOneStation(object):
 class Output(object):
     """Class for output weather data into specific type"""
 
-    def __init__(self, file, type_of_output, hdd_threshold, cdd_threshold):
+    def __init__(self, file: Path, type_of_output: OutputType, hdd_threshold: Optional[float] = 65.0, cdd_threshold:
+                 Optional[float]=65.0):
+        """Constructs an Output object."""
 
         self.file = Path(file)
         self.op_file_name = self.file.name
@@ -164,8 +180,8 @@ class Output(object):
         self.hdd_threshold = hdd_threshold
         self.cdd_threshold = cdd_threshold
 
-    def calculate_hdd(self, temp):
-        """function to calculate hdd"""
+    def calculate_hdd(self, temp: float) -> float:
+        """Calculates Heating Degree Days for a temperature."""
         if temp <= self.hdd_threshold:
             return self.hdd_threshold - temp
         else:
@@ -265,7 +281,7 @@ class Output(object):
         self.df_hourly = df
 
         # epw
-        if self.type_of_output == "EPW":
+        if self.type_of_output == OutputType.EPW:
             epw_convert(df, self.op_file_name)
 
         else:
@@ -277,14 +293,22 @@ class Output(object):
             self.df_monthly = df_monthly
 
             # csv
-            if self.type_of_output == "CSV":
+            if self.type_of_output == OutputType.CSV:
                 df_daily.to_csv(str(self.daily_file_name) + ".csv")
                 df_monthly.to_csv(str(self.monthly_file_name) + ".csv")
 
             # json
-            if self.type_of_output == "JSON":
+            elif self.type_of_output == OutputType.JSON:
                 df_daily.to_json(str(self.daily_file_name) + ".json")
                 df_monthly.to_json(str(self.monthly_file_name) + ".json")
+
+            elif self.type_of_output == OutputType.XLSX:
+                df_daily.to_excel(str(self.daily_file_name) + ".xlsx")
+                df_monthly.to_excel(str(self.monthly_file_name) + ".xlsx")
+
+            else:
+                raise NotImplementedError(f"OutputType={self.type_of_output} is not implemented.")
+
 
     def create_dataframe(self):
         df = self.get_hourly_data()

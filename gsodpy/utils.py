@@ -3,6 +3,8 @@ import struct
 import sys
 import warnings
 from enum import Enum
+from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -97,6 +99,26 @@ class DataType(Enum):
     gsod = 0
     isd_full = 1
     isd_lite = 2
+
+
+class FileType(Enum):
+    """
+    A simple Enum class to represent Output File Type
+    """
+
+    Historical = 0
+    TMY = 1
+
+
+class OutputType(Enum):
+    """
+    A simple Enum class to represent Output File Type
+    """
+
+    CSV = 0
+    JSON = 1
+    XLSX = 2
+    EPW = 3
 
 
 def sanitize_usaf_wban(usaf_wban):
@@ -202,3 +224,15 @@ def clean_df(df):
     df = df.fillna(method="backfill")  # fill first row value with second row
 
     return df
+
+
+def as_path(path: Union[Path, str]) -> Path:
+    """Asserts argument is a Path, or a str (convert to Path), or raises."""
+
+    if not isinstance(path, Path):
+        if isinstance(path, str):
+            path = Path(path)
+        else:
+            raise ValueError("You must provide a pathlib.Path object or a string that can convert to one")
+
+    return path

@@ -7,6 +7,7 @@ from math import asin, cos, sqrt
 import pandas as pd
 
 from gsodpy.constants import ISDHISTORY_PATH
+from gsodpy.utils import as_path
 
 
 class ISDHistory:
@@ -28,19 +29,15 @@ class ISDHistory:
         # If isd_history_path isn't supplied, set it to the default path
         if isd_history_path is None:
             self.isd_history_path = ISDHISTORY_PATH
-        elif not isinstance(isd_history_path, Path):
-            if isinstance(isd_history_path, str):
-                isd_history_path = Path(isd_history_path)
-            else:
-                raise ValueError("You must provide a pathlib.Path object or a string that can convert to one")
-            self.isd_history_path = isd_history_path
+        else:
+            self.isd_history_path = as_path(isd_history_path)
 
         # See if the isd_history needs updating, otherwise just link it
-        self.update_isd_history(isd_history_path=self.isd_history_path)
-        self.df = self.parse_isd(isd_history_path=self.isd_history_path)
+        self.update_isd_history()
+        self._parse_isd()
 
     def update_isd_history(
-        self, isd_history_path=None, force=False, dry_run=False
+        self, force=False, dry_run=False
     ):
         """
         Will download the `isd-history.csv` file
@@ -71,15 +68,10 @@ class ISDHistory:
 
         """
 
-        # Defaults the isd_history_path
-        if isd_history_path is None:
-            isd_history_path = self.isd_history_path
-            print("Using ISDHistory path: {}".format(isd_history_path))
-
         update_needed = False
 
-        if isd_history_path.is_file():
-            tm_time = isd_history_path.lstat().st_mtime
+        if self.isd_history_path.is_file():
+            tm_time = self.isd_history_path.lstat().st_mtime
             print(
                 "isd-history.csv was last modified on: %s"
                 % time.ctime(tm_time)
@@ -97,7 +89,9 @@ class ISDHistory:
 
         if update_needed:
             if not dry_run:
-                self.download_isd(isd_history_path)
+                ret = self.download_isd(isd_history_path=self.isd_history_path)
+                if not ret:
+                    raise ValueError(f"Something went wrong when downloading isd-history.csv to {self.isd_history_path}")
 
         else:
             print(
@@ -107,7 +101,8 @@ class ISDHistory:
 
         return update_needed
 
-    def download_isd(self, isd_history_path: Path):
+    @staticmethod
+    def download_isd(isd_history_path: Path):
         """
         Downloads the isd-history.csv from NOAA
 
@@ -141,57 +136,35 @@ class ISDHistory:
         except Exception as err:
             print("'isd-history.csv' failed to download")
             print("  {}".format(err))
-            success = False
+            return False
 
         print("Success: isd-history.csv loaded")
         ftp.quit()
 
         return success
 
-    def parse_isd(self, isd_history_path=None):
+    def _parse_isd(self):
         """
-        Loads the isd-history.csv into a pandas dataframe. Will serve to check
-        if the station has data up to the year we want data from and get
-        it's full name for reporting
+        Loads the isd-history.csv into a pandas dataframe.
 
-        Args:
-        ------
-            isd_history_path (str, Optional): path to `isd-history.csv`.
-                If None, will get the ISDHistory instance's `isd_pat` that was
-                set during initialization
-
-        Returns:
-        --------
-            df_isd (pd.DataFrame): the isd-history loaded into a dataframe,
-                indexed by "USAF-WBAN"
-
-        Needs:
-        -------------------------------
-            import os
-            import pandas as pd
-
+        Will serve to check if the station has data up to the year we want data from and get
+        its full name for reporting
         """
 
-        # Defaults the isd_history_path
-        if isd_history_path is None:
-            isd_history_path = self.isd_history_path
-            print("Using ISDHistory path: {}".format(isd_history_path))
-
-        df_isd = pd.read_csv(isd_history_path, sep=",", parse_dates=[9, 10])
+        self.df = pd.read_csv(self.isd_history_path, sep=",", parse_dates=[9, 10])
 
         # Need to format the USAF with leading zeros as needed
         # should always be len of 6, WBAN len 5
         # USAF now is a string, and has len 6 so no problem
 
-        df_isd["StationID"] = (
-            df_isd["USAF"] + "-" + df_isd["WBAN"].map("{:05d}".format)
+        self.df["StationID"] = (
+            self.df["USAF"] + "-" + self.df["WBAN"].map("{:05d}".format)
         )
 
-        df_isd = df_isd.set_index("StationID")
+        self.df = self.df.set_index("StationID")
 
-        return df_isd
-
-    def distance(self, lat1, lon1, lat2, lon2):
+    @staticmethod
+    def distance(lat1, lon1, lat2, lon2):
         """
         Computes the Haversine distance between two positions
 
@@ -211,7 +184,7 @@ class ISDHistory:
 
         """
         self.df["distance"] = self.df.apply(
-            lambda x: self.distance(x["LAT"], x["LON"], lat, lon), axis=1
+            lambda x: ISDHistory.distance(lat1=x["LAT"], lon1=x["LON"], lat2=lat, lon2=lon), axis=1
         )
         # print(self.df.loc[self.df['distance'].argmin()])
 

@@ -9,7 +9,7 @@ from pyepw.epw import EPW
 
 from gsodpy.constants import RESULT_DIR, SUPPORT_DIR, WEATHER_DIR
 from gsodpy.ish_full import parse_ish_file
-
+from gsodpy.utils import as_path
 
 def clean_df(df, file):
     """clean raw data into hourly
@@ -164,13 +164,8 @@ def convert_all_isd_full_files(directory: Path = None):
 
     if directory is None:
         directory = WEATHER_DIR / "isd_full"
-    elif not isinstance(directory, Path):
-        if isinstance(directory, str):
-            directory = Path(directory)
-        else:
-            raise ValueError(
-                "You must provide a pathlib.Path object or a string that can convert to one"
-            )
+    else:
+        directory = as_path(directory)
 
     for dirs in directory.iterdir():
         print(dirs)

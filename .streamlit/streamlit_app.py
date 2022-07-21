@@ -7,6 +7,7 @@ from io import BytesIO
 
 from gsodpy.output import GetOneStation
 from gsodpy.isdhistory import ISDHistory
+from gsodpy.utils import FileType, OutputType
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 
@@ -45,13 +46,17 @@ st.set_page_config(layout="centered")
 st.title("Download Temperature Data")
 
 type_of_file = st.selectbox(
-    "Select the type of temperature data",
-    ("Historical Temperatures", "TMY"),
+    label="Select the type of temperature data",
+    options=[x for x in FileType],
+    format_func=lambda x: x.name,
     on_change=set_to_false,
-).replace("Historical Temperatures", "historical")
+)
 
 type_of_output = st.selectbox(
-    "Select the output file format", ("CSV", "XLSX"), on_change=set_to_false
+    label="Select the output file format",
+    options=(OutputType.CSV, OutputType.XLSX),
+    format_func=lambda x: x.name,
+    on_change=set_to_false,
 )
 
 
@@ -65,7 +70,7 @@ country = None
 start_year = 2010
 end_year = 2020
 
-if type_of_file == "historical":
+if type_of_file == FileType.Historical:
 
     st.markdown("### Select time window")
     col1, col2 = st.columns(2)
@@ -97,7 +102,7 @@ else:
 
 st.markdown("### Select the weather station")
 
-if type_of_file == "historical":
+if type_of_file == FileType.Historical:
     lat_long = st.checkbox("I prefer to enter the longitude and latitude")
 
     if lat_long:
@@ -219,7 +224,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
     st.success("Successfully downloaded")
     st.markdown("### Save on your computer")
 
-    if type_of_file == "historical":
+    if type_of_file == FileType.Historical:
         freq = st.selectbox(
             "Select the frequency of the data", ["Hourly", "Daily", "Monthly"],
         )
@@ -234,20 +239,20 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"
 
-
     @st.cache
-    def convert_df(df, type_of_output):
-         # IMPORTANT: Cache the conversion to prevent computation on every rerun
-        if type_of_output == 'CSV':
+    def convert_df(df: pd.DataFrame, type_of_output: OutputType):
+        # IMPORTANT: Cache the conversion to prevent computation on every rerun
+        # TODO: this is reimplementing something already present in output.py...
+        if type_of_output == OutputType.CSV:
             return df.to_csv()
-        elif type_of_output == 'XLSX':
+        elif type_of_output == OutputType.XLSX:
             output = BytesIO()
             writer = pd.ExcelWriter(output, engine='xlsxwriter')
             df.to_excel(writer, index=False, sheet_name='Sheet1')
             workbook = writer.book
             worksheet = writer.sheets['Sheet1']
-            format1 = workbook.add_format({'num_format': '0.00'}) 
-            worksheet.set_column('A:A', None, format1)  
+            format1 = workbook.add_format({'num_format': '0.00'})
+            worksheet.set_column('A:A', None, format1)
             writer.save()
             processed_data = output.getvalue()
             return processed_data
@@ -255,7 +260,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
     st.download_button(
         label="Save Temperature Files",
         data=convert_df(df, type_of_output),
-        file_name=f"{st.session_state['station'].filenamestub}-{freq.lower()}.{type_of_output.lower()}"
+        file_name=f"{st.session_state['station'].filenamestub}-{freq.lower()}.{type_of_output.name.lower()}"
     )
 
 

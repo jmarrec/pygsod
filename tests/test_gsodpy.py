@@ -7,50 +7,46 @@ import os
 import pandas as pd
 import pytest
 from pathlib import Path
-from pkg_resources import resource_filename
 
 # Right now I have to do this, so that the pandas monkeypatching is done...
-from gsodpy.epw_converter import clean_df, epw_convert
+from gsodpy.epw_converter import clean_df
 from gsodpy.isdhistory import ISDHistory
 from gsodpy.ish_full import parse_ish_file
 from gsodpy.noaadata import NOAAData
 from gsodpy.output import Output
-from gsodpy.utils import DataType
+from gsodpy.utils import DataType, ReturnCode, sanitize_usaf_wban
+from gsodpy.constants import WEATHER_DIR, ISDHISTORY_PATH
 
 # from mock import patch
 
 
 class TestGSOD:
-    """
-    py.test class for GSOD
-    """
+    """py.test class for GSOD."""
 
     def test_init_default(self):
-        """
-        py.test for GSOD initialization
-        """
+        """py.test for GSOD initialization."""
         gsod = NOAAData(data_type=DataType.gsod)
         assert gsod
         assert gsod.weather_dir
         assert gsod.isd
         assert isinstance(gsod.isd, ISDHistory)
-        print(gsod.isd.isd_history_path)
-        print(os.path.realpath("../support/isd-history.csv"))
-        assert gsod.isd.isd_history_path == os.path.realpath("support/isd-history.csv")
+        assert gsod.isd.isd_history_path == ISDHISTORY_PATH
 
     def test_init_isd_path(self):
         """
         py.test for GSOD initialization with isd_path supplied
         """
+        isd_path = Path(__file__).resolve().parent / "test_isd_path.csv"
+
         gsod = NOAAData(
-            data_type=DataType.gsod, isd_path="tests/test_isd_path.csv"
+            data_type=DataType.gsod, isd_path=isd_path
         )
         assert gsod
         assert gsod.weather_dir
         assert gsod.isd
         assert isinstance(gsod.isd, ISDHistory)
         assert gsod.isd.isd_history_path
-        assert gsod.isd.isd_history_path == "tests/test_isd_path.csv"
+        assert gsod.isd.isd_history_path == isd_path
 
     def test_set_years(self):
         """
@@ -91,29 +87,28 @@ class TestGSOD:
         """
         py.test for GSOD.sanitize_usaf_wban with bad years
         """
-        gsod = NOAAData(data_type=DataType.gsod)
 
         # Test sanitation of USAF
         with pytest.warns(SyntaxWarning) as record:
-            sanit = gsod.sanitize_usaf_wban("64500-99999")
+            sanit = sanitize_usaf_wban("64500-99999")
         # check that only one warning was raised
         assert len(record) == 1
         assert sanit == "064500-99999"
 
         # Test sanitation of WBAN
         with pytest.warns(SyntaxWarning) as record:
-            sanit = gsod.sanitize_usaf_wban("064500-9999")
+            sanit = sanitize_usaf_wban("064500-9999")
         # check that only one warning was raised
         assert len(record) == 1
         assert sanit == "064500-09999"
 
         # Test bad USAF, too long
         with pytest.raises(ValueError):
-            gsod.sanitize_usaf_wban("0645007-99999")
+            sanitize_usaf_wban("0645007-99999")
 
         # Test bad WBAN, too long
         with pytest.raises(ValueError):
-            gsod.sanitize_usaf_wban("064500-919999")
+            sanitize_usaf_wban("064500-919999")
 
     def test_get_stations_from_file(self):
         """
@@ -135,22 +130,17 @@ class TestGSOD:
 
 
 class TestGSODDownloads:
-    """
-    py.test class for tests around GSOD's function for
-    downloading/cleaning files
-    """
+    """py.test class for tests around GSOD's function for downloading/cleaning files."""
 
     def test_download_GSOD_file(self):
-        """
-        py.test for GSOD._download_GSOD_file
-        """
+        """py.test for GSOD._download_GSOD_file."""
         gsod = NOAAData(data_type=DataType.gsod)
-        (return_code, local_path) = gsod._download_GSOD_file(
-            year=2017, usaf_wban="064500-99999"
+        (return_code, local_path) = gsod.get_year_file(
+            year=2017, usaf_wban="744860-94789"
         )
-        assert return_code == 0
-        assert local_path == Path("../weather_files/2017/064500-99999.op.gz")
-        assert os.path.isfile(local_path)
+        assert return_code == ReturnCode.success
+        assert local_path == (WEATHER_DIR / "gsod" / "2017" / "JOHN F KENNEDY INTERNATIONAL AIRPORT-2017.op").resolve()
+        assert local_path.is_file()
 
 
 class TestISD:
@@ -162,12 +152,6 @@ class TestISD:
     def isd(self):
         gsod = NOAAData(data_type=DataType.gsod)
         return gsod.isd
-
-    def test_update_isd(self, isd):
-        """
-        py.test class for ISD.update_isd_history
-        """
-        assert isd.isd_history_path == Path("../support/isd-history.csv").resolve()
 
     # @patch (ISD.download_isd)
     def test_update_isd_needed(self, isd):
@@ -210,9 +194,25 @@ class TestISDFULL:
     """
 
     @pytest.fixture(scope="class", autouse=False)
-    def df(self):
-        f = resource_filename(__name__, "/744860-94789-2012")
-        df = parse_ish_file(f)
+    def isd_full(self):
+        isd_full = NOAAData(data_type=DataType.isd_full)
+
+        # This is what's run
+        start_year = 2012
+        end_year = 2013
+
+        # Download the data
+        isd_full.set_years_range(start_year=start_year, end_year=end_year)
+
+        isd_full.set_stations(['744860-94789'])
+
+        isd_full.get_all_data()
+
+        return isd_full
+
+    @pytest.fixture(scope="class", autouse=False)
+    def df(self, isd_full):
+        df = parse_ish_file(isd_full)
 
         return df
 
@@ -229,7 +229,7 @@ class TestISDFULL:
     test for epw_converter
     """
 
-    def test_clean_df(self, df):
+    def test_clean_df(self, df, isd_full):
         #      Test clean_df()
         # ----------------
         df_hourly = clean_df(df, "test")
@@ -237,12 +237,9 @@ class TestISDFULL:
 
         #      Test output_daily()
         # ----------------
-        args = {
-            "type_of_output": "CSV",
-            "hdd_threshold": 65,
-            "cdd_threshold": 65,
-        }
-        o = Output(args)
+
+        o = Output(file=isd_full.ops_files[0], type_of_output='CSV', hdd_threshold=65.0, cdd_threshold=65.0)
+
         df_daily = o.output_daily(df_hourly)
         assert df_daily.shape == (366, 11)
 

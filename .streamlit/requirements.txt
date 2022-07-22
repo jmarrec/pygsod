@@ -2,5 +2,6 @@ requests
 tqdm
 pandas
 openpyxl
+xlsxwriter
 pyepw
 git+https://github.com/jmarrec/pygsod/@main#egg=pygsod

@@ -114,7 +114,6 @@ class GetOneStation(object):
         if self.type_of_file == FileType.Historical:
             # download isd_full
             list_files = self._download_historical_data()
-            print("List files", list_files)
 
         elif self.type_of_file == FileType.TMY:
             # download weather data from EP+ website
@@ -132,7 +131,7 @@ class GetOneStation(object):
     def _download_historical_data(self):
 
         self.isd_full = NOAAData(data_type=DataType.isd_full)
-        print("END YEAR", self.end_year)
+
         self.isd_full.set_years_range(start_year=self.start_year, end_year=self.end_year)
 
         self.isd_full.get_stations_from_user_input(
@@ -166,7 +165,6 @@ class Output(object):
 
         self.file = Path(file)
         self.op_file_name = self.file.name
-        print(self.op_file_name)
 
         self._file_names()
 

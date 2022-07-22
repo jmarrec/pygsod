@@ -108,9 +108,8 @@ class NOAAData:
         if end_year < start_year:
             raise ValueError("end_year cannot be lower than start_year")
 
-        print(end_year)
         self.years = [x for x in range(start_year, end_year + 1)]
-        print("YEARS", self.years)
+        
         return self.years
 
     def get_stations_from_file(self, weather_stations_file=None):
@@ -412,7 +411,8 @@ class NOAAData:
             warnings.warn(msg, UserWarning)
 
         if to_close:
-            self.ftp.quit()
+            if year == self.years[-1]:
+                self.ftp.close()
 
         return (return_code, local_path)
 

@@ -11,13 +11,10 @@ from pygsod.utils import FileType, OutputType
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 
-
 def read_isd_history():
     # This will download or update the isd-history.csv as needed
     isd = ISDHistory()
-
     return isd.df
-
 
 def read_ep_ws():
     df_ep = pd.read_excel(EPHISTORY_PATH)
@@ -89,7 +86,10 @@ if type_of_file == FileType.Historical:
             on_change=set_to_false,
         )
 
-    df_dropdown = read_isd_history()
+    if not "read_history" in st.session_state.keys():
+        st.session_state["read_history"] = read_isd_history()
+
+    df_dropdown = st.session_state["read_history"]
 
 
 else:
@@ -181,13 +181,13 @@ with col2:
 args = {
     "type_of_file": type_of_file,
     "type_of_output": type_of_output,
-    "hdd_threshold": hdd,
-    "cdd_threshold": cdd,
     "start_year": start_year,
     "end_year": end_year,
+    "hdd_threshold": hdd,
+    "cdd_threshold": cdd,
     "country": country,
-    "state": state,
     "station_name": ws,
+    "state": state,
     "latitude": lat,
     "longitude": long,
 }

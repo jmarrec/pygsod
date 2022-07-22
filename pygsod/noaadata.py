@@ -108,8 +108,9 @@ class NOAAData:
         if end_year < start_year:
             raise ValueError("end_year cannot be lower than start_year")
 
+        print(end_year)
         self.years = [x for x in range(start_year, end_year + 1)]
-
+        print("YEARS", self.years)
         return self.years
 
     def get_stations_from_file(self, weather_stations_file=None):
@@ -241,6 +242,7 @@ class NOAAData:
 
         i = 0
         for year in tqdm(self.years):
+            print(year)
             for usaf_wban in self.stations:
                 i += 1
 

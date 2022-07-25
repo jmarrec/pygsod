@@ -232,7 +232,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         elif type_of_output == OutputType.XLSX:
             output = BytesIO()
             writer = pd.ExcelWriter(output, engine="xlsxwriter")
-            df.to_excel(writer, index=False, sheet_name="Sheet1")
+            df.to_excel(writer, index=True, sheet_name="Sheet1")
             workbook = writer.book
             worksheet = writer.sheets["Sheet1"]  # type: ignore
             format1 = workbook.add_format({"num_format": "0.00"})  # type: ignore

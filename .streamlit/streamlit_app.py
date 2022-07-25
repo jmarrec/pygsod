@@ -219,9 +219,12 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             df = st.session_state["station"].df_daily
         else:
             df = st.session_state["station"].df_monthly
+
+        st.markdown("Some abbreviations can be found in [this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)")
     else:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"
+
 
     @st.cache
     def convert_df(df: pd.DataFrame, type_of_output: OutputType):

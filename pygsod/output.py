@@ -129,6 +129,7 @@ class GetOneStation(object):
     def _download_historical_data(self):
 
         self.isd_full = NOAAData(data_type=DataType.isd_full)
+
         self.isd_full.set_years_range(start_year=self.start_year, end_year=self.end_year)
 
         self.isd_full.get_stations_from_user_input(
@@ -162,7 +163,6 @@ class Output(object):
 
         self.file = Path(file)
         self.op_file_name = self.file.name
-        print(self.op_file_name)
 
         self._file_names()
 

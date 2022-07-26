@@ -15,7 +15,6 @@ EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 def read_isd_history():
     # This will download or update the isd-history.csv as needed
     isd = ISDHistory()
-
     return isd.df
 
 
@@ -89,7 +88,10 @@ if type_of_file == FileType.Historical:
             on_change=set_to_false,
         )
 
-    df_dropdown = read_isd_history()
+    if "read_history" not in st.session_state.keys():
+        st.session_state["read_history"] = read_isd_history()
+
+    df_dropdown = st.session_state["read_history"]
 
 
 else:
@@ -181,13 +183,13 @@ with col2:
 args = {
     "type_of_file": type_of_file,
     "type_of_output": type_of_output,
-    "hdd_threshold": hdd,
-    "cdd_threshold": cdd,
     "start_year": start_year,
     "end_year": end_year,
+    "hdd_threshold": hdd,
+    "cdd_threshold": cdd,
     "country": country,
-    "state": state,
     "station_name": ws,
+    "state": state,
     "latitude": lat,
     "longitude": long,
 }
@@ -219,6 +221,12 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             df = st.session_state["station"].df_daily
         else:
             df = st.session_state["station"].df_monthly
+
+        st.markdown(
+            "Some abbreviations can be found in "
+            "[this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)"
+        )
+
     else:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"
@@ -232,7 +240,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         elif type_of_output == OutputType.XLSX:
             output = BytesIO()
             writer = pd.ExcelWriter(output, engine="xlsxwriter")
-            df.to_excel(writer, index=False, sheet_name="Sheet1")
+            df.to_excel(writer, index=True, sheet_name="Sheet1")
             workbook = writer.book
             worksheet = writer.sheets["Sheet1"]  # type: ignore
             format1 = workbook.add_format({"num_format": "0.00"})  # type: ignore

@@ -86,7 +86,7 @@ if type_of_file == FileType.Historical:
             on_change=set_to_false,
         )
 
-    if not "read_history" in st.session_state.keys():
+    if "read_history" not in st.session_state.keys():
         st.session_state["read_history"] = read_isd_history()
 
     df_dropdown = st.session_state["read_history"]
@@ -220,7 +220,8 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         else:
             df = st.session_state["station"].df_monthly
 
-        st.markdown("Some abbreviations can be found in [this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)")
+        st.markdown("Some abbreviations can be found in\
+             [this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)")
     else:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"

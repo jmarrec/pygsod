@@ -195,7 +195,7 @@ class TestISDFULL:
 
         # This is what's run
         start_year = 2012
-        end_year = 2013
+        end_year = 2012 # if we want to run only one year end_year has to be 2012 (12/31/2012)
 
         # Download the data
         isd_full.set_years_range(start_year=start_year, end_year=end_year)
@@ -229,6 +229,7 @@ class TestISDFULL:
         #      Test clean_df()
         # ----------------
         df_hourly = clean_df(df, "test")
+
         assert df_hourly.shape == (8784, 12)  # year of 2012 has 8784 hrs
 
         #      Test output_daily()

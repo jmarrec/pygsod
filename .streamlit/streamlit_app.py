@@ -11,10 +11,12 @@ from pygsod.utils import FileType, OutputType
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 
+
 def read_isd_history():
     # This will download or update the isd-history.csv as needed
     isd = ISDHistory()
     return isd.df
+
 
 def read_ep_ws():
     df_ep = pd.read_excel(EPHISTORY_PATH)
@@ -220,12 +222,13 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
         else:
             df = st.session_state["station"].df_monthly
 
-        st.markdown("Some abbreviations can be found in\
-             [this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)")
+        st.markdown(
+            "Some abbreviations can be found in [this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)"
+        )
+
     else:
         df = st.session_state["station"].df_hourly
         freq = "Hourly"
-
 
     @st.cache
     def convert_df(df: pd.DataFrame, type_of_output: OutputType):

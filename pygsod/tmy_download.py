@@ -163,7 +163,6 @@ class TMY(object):
             "visibility": [i.visibility for i in epw.weatherdata],
             "wind_direction": [i.wind_direction for i in epw.weatherdata],
             "wind_speed": [i.wind_speed for i in epw.weatherdata],
-            "wind_speed": [i.wind_speed for i in epw.weatherdata],
             "zenith_luminance": [i.zenith_luminance for i in epw.weatherdata],
         }
 

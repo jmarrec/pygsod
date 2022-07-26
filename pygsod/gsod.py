@@ -67,10 +67,14 @@ def parse_gsod_op_file(op_path):
     #                                          'Bool': np.bool}).to_dict()
     #
     # df['Name'] = df.FIELD
-    # df.loc[~df['IP_Units'].isnull(), 'Name'] = df.loc[~df['IP_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['IP_Units'].isnull(), 'IP_Units']
+    # df.loc[~df['IP_Units'].isnull(), 'Name'] = (
+    #     df.loc[~df['IP_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['IP_Units'].isnull(), 'IP_Units']
+    # )
     #
     # df['SI_Name'] = df.FIELD
-    # df.loc[~df['SI_Units'].isnull(), 'SI_Name'] = df.loc[~df['SI_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['SI_Units'].isnull(), 'SI_Units']
+    # df.loc[~df['SI_Units'].isnull(), 'SI_Name'] = (
+    #     df.loc[~df['SI_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['SI_Units'].isnull(), 'SI_Units']
+    # )
     #
     # names = df.Name.tolist()
 

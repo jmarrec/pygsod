@@ -15,20 +15,16 @@ import pandas as pd
     * binary_type: str in Python 2, bytes in Python 3
     * string_types: basestring in Python 2, str in Python 3
 """
-PY3 = sys.version_info[0] >= 3
 
-if PY3:
-    string_types = (str,)
-    integer_types = (int,)
-    class_types = (type,)
-    text_type = str
-    binary_type = bytes
-else:
-    string_types = (basestring,)
-    integer_types = (int, long)
-    class_types = (type, types.ClassType)
-    text_type = unicode
-    binary_type = str
+if sys.version_info[0] < 3:
+    raise ValueError("Python3 is only supported")
+
+
+string_types = (str,)
+integer_types = (int,)
+class_types = (type,)
+text_type = str
+binary_type = bytes
 
 string_and_binary_types = string_types + (binary_type,)
 
@@ -158,10 +154,7 @@ def get_valid_year(prompt):
 
     """
     while True:
-        if sys.version_info[0] >= 3:
-            year = input(prompt)
-        else:
-            year = raw_input(prompt)
+        year = input(prompt)
 
         # If nothing is provided, get current year
         if year == "":

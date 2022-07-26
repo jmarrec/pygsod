@@ -14,12 +14,11 @@ with the syntax "USAF-WBAN"
 import datetime
 import os
 
-import numpy as np
 import pandas as pd
 
 from pygsod.constants import WEATHER_DIR
 from pygsod.noaadata import NOAAData
-from pygsod.utils import DataType, get_valid_year, is_list_like, sanitize_usaf_wban
+from pygsod.utils import DataType, get_valid_year, is_list_like
 
 
 def parse_isd_lite_op_file(op_path):
@@ -67,28 +66,33 @@ def parse_isd_lite_op_file(op_path):
     #                                          'Bool': np.bool}).to_dict()
     #
     # df['Name'] = df.FIELD
-    # df.loc[~df['IP_Units'].isnull(), 'Name'] = df.loc[~df['IP_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['IP_Units'].isnull(), 'IP_Units']
+    # df.loc[~df['IP_Units'].isnull(), 'Name'] = (
+    #     df.loc[~df['IP_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['IP_Units'].isnull(), 'IP_Units']
+    # )
     #
     # df['SI_Name'] = df.FIELD
-    # df.loc[~df['SI_Units'].isnull(), 'SI_Name'] = df.loc[~df['SI_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['SI_Units'].isnull(), 'SI_Units']
+    # df.loc[~df['SI_Units'].isnull(), 'SI_Name'] = (
+    #     df.loc[~df['SI_Units'].isnull(), 'FIELD'] + "_" + df.loc[~df['SI_Units'].isnull(), 'SI_Units']
+    # )
     #
     # names = df.Name.tolist()
 
+    # TODO: not working
     # Define the [start,end[ for the fixed-width format
-    colspecs = [
-        (0, 4),
-        (5, 7),
-        (8, 11),
-        (11, 13),
-        (13, 19),
-        (19, 24),
-        (25, 31),
-        (31, 37),
-        (37, 43),
-        (43, 49),
-        (49, 55),
-        (55, 61),
-    ]
+    # colspecs = [
+    #     (0, 4),
+    #     (5, 7),
+    #     (8, 11),
+    #     (11, 13),
+    #     (13, 19),
+    #     (19, 24),
+    #     (25, 31),
+    #     (31, 37),
+    #     (37, 43),
+    #     (43, 49),
+    #     (49, 55),
+    #     (55, 61),
+    # ]
 
     # Define column names
     names = [
@@ -121,21 +125,22 @@ def parse_isd_lite_op_file(op_path):
         "PRCP_mm_6hr": 10.0,
     }
 
+    # TODO: use that!
     # Force dtypes
-    dtypes = {
-        "YEAR": np.int32,
-        "MONTH": np.int32,
-        "DAY": np.int32,
-        "HOUR": np.int32,
-        "TEMP_C": np.float64,
-        "DEWP_C": np.float64,
-        "SLP_HPa": np.float64,
-        "WIND_dir": np.float64,
-        "WDSP_ms": np.float64,
-        # 'SkyCond': np.float64,
-        "PRCP_mm_1hr": np.float64,
-        "PRCP_mm_6hr": np.float64,
-    }
+    # dtypes = {
+    #     "YEAR": np.int32,
+    #     "MONTH": np.int32,
+    #     "DAY": np.int32,
+    #     "HOUR": np.int32,
+    #     "TEMP_C": np.float64,
+    #     "DEWP_C": np.float64,
+    #     "SLP_HPa": np.float64,
+    #     "WIND_dir": np.float64,
+    #     "WDSP_ms": np.float64,
+    #     # 'SkyCond': np.float64,
+    #     "PRCP_mm_1hr": np.float64,
+    #     "PRCP_mm_6hr": np.float64,
+    # }
 
     # Define NA values per column, based on gsod format description
     na_values = {

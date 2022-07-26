@@ -1,11 +1,9 @@
-import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 
 import pandas as pd
-from pyepw.epw import EPW
 
-from pygsod.constants import RESULT_DIR, WEATHER_DIR
+from pygsod.constants import RESULT_DIR
 from pygsod.epw_converter import clean_df, epw_convert
 from pygsod.ish_full import parse_ish_file
 from pygsod.noaadata import NOAAData

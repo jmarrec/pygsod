@@ -239,14 +239,15 @@ class NOAAData:
 
             raise ValueError(msg)
 
+        final_close = (self.ftp is None)
         i = 0
         for year in tqdm(self.years):
 
             for usaf_wban in self.stations:
                 i += 1
 
-                # Try downloading
-                (return_code, op_path) = self.get_year_file(year=year, usaf_wban=usaf_wban)
+                # Try downloading, force not closing the connection yet
+                (return_code, op_path) = self.get_year_file(year=year, usaf_wban=usaf_wban, to_close=False)
 
                 print(op_path)
                 if return_code == ReturnCode.success:
@@ -259,13 +260,17 @@ class NOAAData:
 
                 # bar.update(i)
 
+        if self.ftp is not None and final_close:
+            self.ftp.close()
+            self.ftp = None
+
         print("Success: {} files have been stored. ".format(c))
         print("{} station IDs didn't exist. ".format(r))
         print("{} stations stopped recording data before a year " "that was requested".format(o))
 
         return (c, r, o)
 
-    def get_year_file(self, year, usaf_wban):
+    def get_year_file(self, year, usaf_wban, to_close=None):
         """
         Downloads and extracts data from the appropriate source (GSOD, ISD,
         etc) from a single year for a single station.
@@ -286,6 +291,11 @@ class NOAAData:
             weather_dir (str): path to the folder to store weather files, will
                 default to self.weather_dir
 
+            to_close (optional bool): whether to close the ftp connection after download
+                True: force close
+                False: force keep alive (even if it was first created during this call)
+                None: if self.ftp is None originally, will close it, otherwise do nothing
+
         Returns:
         --------
 
@@ -300,13 +310,13 @@ class NOAAData:
         op_path = False
 
         # TODO: CHECK IF FILE EXISTS BEFORE DOWNLOADING
-        return_code, op_gz_path = self._get_year_file(year=year, usaf_wban=usaf_wban)
+        return_code, op_gz_path = self._get_year_file(year=year, usaf_wban=usaf_wban, to_close=to_close)
         if return_code == ReturnCode.success:
             op_path = self._cleanup_extract_file(op_gz_path=op_gz_path, delete_op_gz=True)
 
         return return_code, op_path
 
-    def _get_year_file(self, year: int, usaf_wban: str) -> Tuple[ReturnCode, Path]:
+    def _get_year_file(self, year: int, usaf_wban: str, to_close=None) -> Tuple[ReturnCode, Path]:
         """
         Downloads data for a single year for a single station
 
@@ -320,6 +330,8 @@ class NOAAData:
 
             usaf_wban (str): the USAF-WBAN (eg '064500-99999') to download data
             for
+
+            to_close (optional bool): whether to close the ftp connection after download
 
         Returns:
         --------
@@ -339,12 +351,12 @@ class NOAAData:
         self.weather_dir.mkdir(parents=True, exist_ok=True)
 
         # Whether you need to close the ftp connection or not
-        to_close = False
         if self.ftp is None:
-            to_close = True
             # Log to NOAA ftp
             self.ftp = FTP("ftp.ncdc.noaa.gov")
             self.ftp.login()
+            if to_close is None:
+                to_close = True
         else:
             if self.ftp.host != "ftp.ncdc.noaa.gov":
                 raise ValueError(
@@ -411,8 +423,8 @@ class NOAAData:
             warnings.warn(msg, UserWarning)
 
         if to_close:
-            if year == self.years[-1]:
-                self.ftp.close()
+            self.ftp.close()
+            self.ftp = None
 
         return (return_code, local_path)
 

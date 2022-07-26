@@ -223,7 +223,8 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             df = st.session_state["station"].df_monthly
 
         st.markdown(
-            "Some abbreviations can be found in [this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)"
+            "Some abbreviations can be found in "
+            "[this link](https://www.ncei.noaa.gov/pub/data/noaa/ish-abbreviated.txt)"
         )
 
     else:

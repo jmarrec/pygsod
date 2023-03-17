@@ -160,7 +160,7 @@ class TestGSODDownloads:
         stations = GetOneStation(**args)
         stations.run()
 
-        assert Path(RESULT_DIR / "CENTRAL PARK-2017.epw").resolve()        
+        assert Path(RESULT_DIR / "CENTRAL PARK-2017.epw").exists()        
 
 
 class TestISD:

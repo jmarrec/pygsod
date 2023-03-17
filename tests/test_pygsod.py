@@ -5,19 +5,20 @@ import datetime
 # import numpy as np
 import os
 from pathlib import Path
+import numpy as np
 
 import pandas as pd
 import pytest
 
-from pygsod.constants import ISDHISTORY_PATH, WEATHER_DIR
+from pygsod.constants import ISDHISTORY_PATH, WEATHER_DIR, RESULT_DIR
 
 # Right now I have to do this, so that the pandas monkeypatching is done...
 from pygsod.epw_converter import clean_df
 from pygsod.isdhistory import ISDHistory
 from pygsod.ish_full import parse_ish_file
 from pygsod.noaadata import NOAAData
-from pygsod.output import Output
-from pygsod.utils import DataType, ReturnCode, sanitize_usaf_wban
+from pygsod.output import GetOneStation, Output
+from pygsod.utils import DataType, FileType, OutputType, ReturnCode, sanitize_usaf_wban
 
 # from mock import patch
 
@@ -137,6 +138,29 @@ class TestGSODDownloads:
         assert return_code == ReturnCode.success
         assert local_path == (WEATHER_DIR / "gsod" / "2017" / "JOHN F KENNEDY INTERNATIONAL AIRPORT-2017.op").resolve()
         assert local_path.is_file()
+
+    def test_download_epw(self):
+        station = "CENTRAL PARK"
+        state = "NY"
+        
+        args = {
+            "type_of_file": FileType.Historical,
+            "type_of_output": OutputType.EPW,
+            "start_year": 2017,
+            "end_year": 2017,
+            "hdd_threshold": 65,
+            "cdd_threshold": 65,
+            "country": "US",
+            "station_name": station,
+            "state": state,
+            "latitude": np.nan,
+            "longitude": np.nan,
+        }
+
+        stations = GetOneStation(**args)
+        stations.run()
+
+        assert Path(RESULT_DIR / "CENTRAL PARK-2017.epw").resolve()        
 
 
 class TestISD:

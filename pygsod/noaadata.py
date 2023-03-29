@@ -1,3 +1,5 @@
+"""Downloading data from NOAA."""
+
 # Make it backwards compatible with python 2
 from __future__ import division, print_function
 
@@ -18,16 +20,17 @@ from pygsod.utils import DataType, ReturnCode, as_path, sanitize_usaf_wban
 
 
 class NOAAData:
+    """Main class for downloading data from NOAA FTP."""
     def __init__(self, data_type, isd_path: Optional[Path] = None, weather_dir: Optional[Path] = None):
-        """
-        Init the NOAAData main object, and attaches an `isd` (class ISD) to it
+        """Init the NOAAData main object, and attaches an `isd` (class ISD) to it.
 
         Args:
         ------
-            isd_path (Path): path to `isd-history.csv`, optional, will default
-            to ../support/isd-history.csv
+        - data_type (DataType): the type of data to fetch
+        - isd_path (Path): path to `isd-history.csv`, optional, will default
+          to ../support/isd-history.csv
 
-            weather_dir (Path): path to folder to download weather files,
+        - weather_dir (Path): path to folder to download weather files,
             will default to ../weather_files/
 
         """

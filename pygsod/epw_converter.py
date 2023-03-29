@@ -13,8 +13,9 @@ from pygsod.utils import as_path
 
 
 def clean_df(df, file):
-    """clean raw data into hourly
-    interpolate for missing data
+    """Clean raw data into hourly.
+
+    Interpolates for missing data.
     """
     # print("years downloaded:", set(df.index.year))
     # year = int(input("enter the year you want to convert:"))
@@ -55,8 +56,7 @@ def clean_df(df, file):
 
 
 def epw_convert(df, op_file_name):
-    """Convert ish_full into EPW file"""
-
+    """Convert ish_full into EPW file."""
     epw = EPW()
     epw_file = SUPPORT_DIR / "EPW-template-file.epw"
     epw.read(epw_file)
@@ -153,14 +153,13 @@ def epw_convert(df, op_file_name):
 
 
 def convert_all_isd_full_files(directory: Optional[Path] = None):
-    """Runs epw_convert for all the files in the
-    isd_full folder
+    """Runs epw_convert for all the files in the isd_full folder.
 
     Arg :
-    - directory (Path): should be the same type of folder than
-    isd_full, e.g one folder for each year and in these folders
-     you have weather file in .xlsx format"""
-
+        - directory (Path): should be the same type of folder than
+        isd_full, e.g one folder for each year and in these folders
+        you have weather file in .xlsx format
+    """
     if directory is None:
         directory = WEATHER_DIR / "isd_full"
     else:

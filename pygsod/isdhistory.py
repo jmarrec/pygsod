@@ -4,6 +4,7 @@ from ftplib import FTP
 # For the Haversine Formula
 from math import asin, cos, sqrt
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 
@@ -16,7 +17,7 @@ class ISDHistory:
     Class for the ISDHistory file and methods
     """
 
-    def __init__(self, isd_history_path: Path = None):
+    def __init__(self, isd_history_path: Optional[Path] = None):
         """
         Init the ISDHistory. Checks if exists, if not downloads it,
         stores the outpath

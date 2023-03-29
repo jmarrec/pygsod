@@ -70,7 +70,6 @@ start_year = 2010
 end_year = 2020
 
 if type_of_file == FileType.Historical:
-
     st.markdown("### Select time window")
     col1, col2 = st.columns(2)
 
@@ -95,7 +94,6 @@ if type_of_file == FileType.Historical:
 
 
 else:
-
     df_dropdown = read_ep_ws()
 
 st.markdown("### Select the weather station")
@@ -126,7 +124,6 @@ if type_of_file == FileType.Historical:
             )
 
 if not lat_long:
-
     col1, col2 = st.columns(2)
 
     with col1:

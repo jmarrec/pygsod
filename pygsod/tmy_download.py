@@ -19,7 +19,6 @@ class TMY(object):
     download_dir_path = Path(WEATHER_DIR)
 
     def __init__(self, country: str, temperature_file: str, state: Optional[str] = None):
-
         self.country = country
         self.state = state
         self.temperature_file = temperature_file
@@ -97,7 +96,6 @@ class TMY(object):
 
     @classmethod
     def locate_local_epw(cls, lookup_str: str) -> Optional[Path]:
-
         matches = list(cls.download_dir_path.glob(f"**/*{lookup_str}*.epw"))
         if not matches:
             return None

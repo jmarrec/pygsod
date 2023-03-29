@@ -2,6 +2,7 @@
 
 import datetime
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -68,9 +69,7 @@ def epw_convert(df, op_file_name):
         length = len(epw.weatherdata)
 
     for i, wd in enumerate(epw.weatherdata):
-
         if i < length:
-
             wd.year = df.index[i].year
 
             #    Temperature
@@ -153,7 +152,7 @@ def epw_convert(df, op_file_name):
     epw.save(epw_file_new)
 
 
-def convert_all_isd_full_files(directory: Path = None):
+def convert_all_isd_full_files(directory: Optional[Path] = None):
     """Runs epw_convert for all the files in the
     isd_full folder
 
@@ -172,7 +171,6 @@ def convert_all_isd_full_files(directory: Path = None):
         for file_path in dirs.iterdir():
             file_name = file_path.name
             if file_name.endswith("xlsx"):
-
                 df = pd.read_excel(str(file_path), index_col=0)
                 df = clean_df(df, file_name)
                 epw_convert(df, file_name)

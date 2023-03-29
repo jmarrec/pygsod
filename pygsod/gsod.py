@@ -327,7 +327,6 @@ def parse_gsod_op_file(op_path):
 
 # Gets only run if calling "python pygsod.py" not if you import it
 if __name__ == "__main__":
-
     gsod = NOAAData(data_type=DataType.gsod)
 
     # This is what's run

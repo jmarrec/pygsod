@@ -90,7 +90,6 @@ class GetOneStation(object):
             o.output_files()
 
     def get_one_dataframe(self):
-
         self.list_files = self._get_data()
 
         df_hourly = pd.DataFrame()
@@ -127,7 +126,6 @@ class GetOneStation(object):
         return list_files
 
     def _download_historical_data(self):
-
         self.isd_full = NOAAData(data_type=DataType.isd_full)
 
         self.isd_full.set_years_range(start_year=self.start_year, end_year=self.end_year)

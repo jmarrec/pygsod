@@ -18,7 +18,7 @@ from pygsod.utils import DataType, ReturnCode, as_path, sanitize_usaf_wban
 
 
 class NOAAData:
-    def __init__(self, data_type, isd_path: Path = None, weather_dir: Path = None):
+    def __init__(self, data_type, isd_path: Optional[Path] = None, weather_dir: Optional[Path] = None):
         """
         Init the NOAAData main object, and attaches an `isd` (class ISD) to it
 
@@ -167,7 +167,6 @@ class NOAAData:
 
         """
         if (country is not None) and (station_name is not None):
-
             df = self.isd.df
 
             if state is None:
@@ -239,10 +238,9 @@ class NOAAData:
 
             raise ValueError(msg)
 
-        final_close = (self.ftp is None)
+        final_close = self.ftp is None
         i = 0
         for year in tqdm(self.years):
-
             for usaf_wban in self.stations:
                 i += 1
 
@@ -395,7 +393,6 @@ class NOAAData:
 
         return_code = None
         if year <= end_year:
-
             # Retrieve file: open(fgsod, 'wb') opens a local file to receive
             # the distant blocks of binary data, in binary write mode
             # retrbinary(command, callback): command is a 'RETR filename',

@@ -302,7 +302,6 @@ def parse_ish_file(isd_full, create_excel_file=True):
 
 
 if __name__ == "__main__":
-
     isd_full = NOAAData(data_type=DataType.isd_full)
 
     # This is what's run

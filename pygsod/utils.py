@@ -116,7 +116,6 @@ class OutputType(Enum):
 
 
 def sanitize_usaf_wban(usaf_wban):
-
     # Format USAF and WBAN as fixed-length numbers (strings)
     usaf, wban = usaf_wban.split("-")
     if (len(usaf) > 6) | (len(wban) > 5):

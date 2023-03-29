@@ -198,7 +198,6 @@ def parse_isd_lite_op_file(op_path):
 
 # Gets only run if calling "python pygsod.py" not if you import it
 if __name__ == "__main__":
-
     isd_lite = NOAAData(data_type=DataType.isd_lite)
 
     # This is what's run

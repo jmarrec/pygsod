@@ -61,7 +61,7 @@ setup(
     keywords="gsod weather python pandas epw energyplus",
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(exclude=["contrib", "doc", "tests", "support", "weather_files"]),
+    packages=find_packages(include=["pygsod", "support"]),
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
     #   py_modules=["my_module"],
@@ -84,6 +84,9 @@ setup(
     # package_data={
     #     'sample': ['package_data.dat'],
     # },
+    package_data={
+         'support': ['EPW-template-file.epw'],
+    },
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
@@ -97,4 +100,5 @@ setup(
     #         'sample=sample:main',
     #     ],
     # },
+    include_package_data=True,
 )

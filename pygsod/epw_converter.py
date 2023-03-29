@@ -23,7 +23,7 @@ def clean_df(df, file):
     print("start parsing", file)
     print("length of original dataset:", len(df))
     df.index = pd.to_datetime(df.index)
-    df = df.groupby(pd.Grouper(freq="1H")).mean()
+    df = df.groupby(pd.Grouper(freq="1H")).mean(numeric_only=True)
     print("length of data after groupby hour", len(df))
 
     current_year = datetime.datetime.now().year
@@ -151,6 +151,7 @@ def epw_convert(df, op_file_name):
     epw_file_new = RESULT_DIR / (op_file_name + ".epw")
     epw.save(epw_file_new)
 
+    return epw_file_new
 
 def convert_all_isd_full_files(directory: Optional[Path] = None):
     """Runs epw_convert for all the files in the isd_full folder.

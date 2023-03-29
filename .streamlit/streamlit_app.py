@@ -242,7 +242,7 @@ if "downloaded" in st.session_state.keys() and st.session_state["downloaded"]:
             worksheet = writer.sheets["Sheet1"]  # type: ignore
             format1 = workbook.add_format({"num_format": "0.00"})  # type: ignore
             worksheet.set_column("A:A", None, format1)
-            writer.save()
+            writer.close()
             processed_data = output.getvalue()
             return processed_data
 

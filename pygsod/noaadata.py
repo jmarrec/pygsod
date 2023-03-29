@@ -21,6 +21,7 @@ from pygsod.utils import DataType, ReturnCode, as_path, sanitize_usaf_wban
 
 class NOAAData:
     """Main class for downloading data from NOAA FTP."""
+
     def __init__(self, data_type, isd_path: Optional[Path] = None, weather_dir: Optional[Path] = None):
         """Init the NOAAData main object, and attaches an `isd` (class ISD) to it.
 

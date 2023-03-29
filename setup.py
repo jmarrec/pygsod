@@ -61,7 +61,7 @@ setup(
     keywords="gsod weather python pandas epw energyplus",
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(include=["pygsod", "support"], exclude=["contrib", "doc", "tests", "weather_files"]),
+    packages=find_packages(include=["pygsod", "support"]),
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
     #   py_modules=["my_module"],

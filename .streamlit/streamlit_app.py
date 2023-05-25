@@ -78,13 +78,13 @@ if type_of_file == FileType.Historical:
     with col1:
         start_year = st.selectbox(
             "Select the start year",
-            list(range(2010, current_year)),
+            list(range(2010, current_year + 1)),
             on_change=set_to_false,
         )
     with col2:
         end_year = st.selectbox(
             "Select the end year",
-            list(range(2010, current_year)),
+            list(range(2010, current_year + 1)),
             12,
             on_change=set_to_false,
         )

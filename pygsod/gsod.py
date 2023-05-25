@@ -346,3 +346,8 @@ if __name__ == "__main__":
     print("Starting retrieving!")
     gsod.get_all_data()
     print(gsod.ops_files)
+    for op_path in gsod.ops_files:
+        df = parse_gsod_op_file(op_path=op_path)
+        csv_path = op_path.with_suffix('.csv')
+        df.to_csv(csv_path)
+        print(f"Saved csv to {csv_path}")

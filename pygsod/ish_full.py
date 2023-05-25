@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
     print("Starting retrieving!")
     isd_full.get_all_data()
-    df = parse_ish_file(isd_full.ops_files)
+    df = parse_ish_file(isd_full)
     # fname = os.path.join(isd_full.weather_dir, 'df_isd_full.xlsx')
     # df.to_excel(fname)
     print(df)

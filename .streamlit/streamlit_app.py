@@ -1,5 +1,6 @@
 from io import BytesIO
 from pathlib import Path
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -66,8 +67,9 @@ long = np.nan
 ws = None
 state = None
 country = None
+current_year = datetime.date.today().year
 start_year = 2010
-end_year = 2020
+end_year = current_year
 
 if type_of_file == FileType.Historical:
     st.markdown("### Select time window")
@@ -76,13 +78,13 @@ if type_of_file == FileType.Historical:
     with col1:
         start_year = st.selectbox(
             "Select the start year",
-            list(range(2010, 2023)),
+            list(range(2010, current_year)),
             on_change=set_to_false,
         )
     with col2:
         end_year = st.selectbox(
             "Select the end year",
-            list(range(2010, 2023)),
+            list(range(2010, current_year)),
             12,
             on_change=set_to_false,
         )

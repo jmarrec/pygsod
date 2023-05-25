@@ -152,20 +152,21 @@ def get_valid_year(prompt):
         import datetime
 
     """
+    current_year = datetime.date.today().year
     while True:
         year = input(prompt)
 
         # If nothing is provided, get current year
         if year == "":
-            year = datetime.date.today().year
+            year = current_year
         try:
             year = int(year)
         except ValueError:
-            print("Please enter an integer between 2000 and 2020")
+            print(f"Please enter an integer between 2000 and {current_year}")
             continue
 
-        if year < 1950 or year > 2020:
-            print("year needs to be between 2000 and 2020!")
+        if year < 1950 or year > current_year:
+            print(f"year needs to be between 2000 and {current_year}!")
             continue
         else:
             break

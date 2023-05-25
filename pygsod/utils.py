@@ -2,7 +2,7 @@ import datetime
 import struct
 import sys
 import warnings
-from enum import Enum
+from enum import IntEnum
 from pathlib import Path
 from typing import Union
 
@@ -75,9 +75,9 @@ def is_list_like(obj):
     return hasattr(obj, "__iter__") and not isinstance(obj, string_and_binary_types)
 
 
-class ReturnCode(Enum):
+class ReturnCode(IntEnum):
     """
-    A simple Enum class to represent return codes
+    A simple IntEnum class to represent return codes
     """
 
     success = 0
@@ -85,9 +85,9 @@ class ReturnCode(Enum):
     outdated = 2
 
 
-class DataType(Enum):
+class DataType(IntEnum):
     """
-    A simple Enum class to represent NOAA data types codes
+    A simple IntEnum class to represent NOAA data types codes
     """
 
     gsod = 0
@@ -95,18 +95,18 @@ class DataType(Enum):
     isd_lite = 2
 
 
-class FileType(Enum):
+class FileType(IntEnum):
     """
-    A simple Enum class to represent Output File Type
+    A simple IntEnum class to represent Output File Type
     """
 
     Historical = 0
     TMY = 1
 
 
-class OutputType(Enum):
+class OutputType(IntEnum):
     """
-    A simple Enum class to represent Output File Type
+    A simple IntEnum class to represent Output File Type
     """
 
     CSV = 0

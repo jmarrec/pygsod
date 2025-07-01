@@ -41,7 +41,7 @@ def clean_df(df, file):
 
     missing_hours = date_range[~date_range.isin(df.index)]
     for idx in missing_hours:
-        df.loc[idx] = np.NaN  # make the missing rows filled with NaN
+        df.loc[idx] = np.nan  # make the missing rows filled with NaN
 
     print("length of processed dataset:", len(df), "\n")
     # sort to make new rows in place, otherwise the Nan rows are at the end

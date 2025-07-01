@@ -13,9 +13,6 @@ from pygsod.utils import FileType, OutputType
 
 EPHISTORY_PATH = Path(__file__).resolve().parent / "ep_weather_stations.xlsx"
 
-logger = st.logger.get_logger("pygsod")
-logger.setLevel("INFO")
-
 
 def read_isd_history():
     # This will download or update the isd-history.csv as needed
@@ -205,7 +202,6 @@ submit = st.button("Download from the API", on_click=change_status)
 if submit:
     st.spinner("Downloading...")
     st.write("Downloading... Please wait")
-    logger.info(f"args={json.dumps(args, indent=2)}")
     st.session_state["station"] = GetOneStation(**args)
     st.session_state["station"].get_one_dataframe()
     st.balloons()

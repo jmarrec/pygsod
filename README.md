@@ -6,6 +6,23 @@
 [![Build Status](https://github.com/jmarrec/pygsod/actions/workflows/dev.yml/badge.svg)](https://github.com/jmarrec/pygsod/actions/workflows/dev.yml)
 [![codecov](https://codecov.io/gh/jmarrec/pygsod/branch/main/graphs/badge.svg)](https://codecov.io/github/jmarrec/pygsod)
 
+> [!CAUTION]
+> **This repository is archived and no longer maintained.**
+>
+> NOAA NCEI's Integrated Surface Database (ISD) and Global Summary of the Day (GSOD), which pygsod relies on, reached
+> end of life on August 29, 2025 and no longer receive updates: `isd-history.csv` shows no station with data past the
+> end of August 2025. From [NCEI's announcement](https://www.ncei.noaa.gov/operating-system-upgrade-outage):
+>
+> > The Global Hourly - Integrated Surface Daily (ISD) reached end of life at end of life on August 29, and will receive
+> > no further updates. ISD is being replaced by the Global Historical Climatology Network hourly (GHCNh).
+> >
+> > Global Summary of the Day (GSOD) reached end of life on August 29, and will receive no further updates.
+>
+> ISD is replaced by the [Global Historical Climatology Network hourly (GHCNh)](https://www.ncei.noaa.gov/products/global-historical-climatology-network-hourly).
+>
+> **Use [pyghcnh](https://github.com/jmarrec/pyghcnh) instead** (`pip install pyghcnh`), which retrieves GHCNh data into
+> pandas, and computes daily and monthly data with Heating and Cooling Degree Days.
+
 ## Caveat
 
 **This is a work in progress: The documentation is outdated and lacking, test coverage is low.** But I decided open sourcing was better than not anyways.
